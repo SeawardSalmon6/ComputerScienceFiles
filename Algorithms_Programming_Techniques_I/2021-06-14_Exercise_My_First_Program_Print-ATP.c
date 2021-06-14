@@ -1,7 +1,10 @@
 #include <stdio.h>
+#include <locale.h>
 
 int main() {
-  printf("Olá, este é meu primeiro programa!\n");
+	setlocale(LC_ALL, "Portuguese");
+	
+	printf("Olá, este é meu primeiro programa!\n");
 	
   return 0;
 }

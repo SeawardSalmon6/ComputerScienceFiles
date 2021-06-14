@@ -1,6 +1,9 @@
 #include <stdio.h>
+#include <locale.h>
 
 int main() {
+	setlocale(LC_ALL, "Portuguese");
+	
 	float A, B, average;
 
 	printf("Insira dois valores de notas (em reais), abaixo:\n");

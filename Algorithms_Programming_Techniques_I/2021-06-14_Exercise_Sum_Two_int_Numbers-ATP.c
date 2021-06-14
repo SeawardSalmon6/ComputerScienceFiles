@@ -1,6 +1,9 @@
 #include <stdio.h>
+#include <locale.h>
 
 int main() {
+	setlocale(LC_ALL, "Portuguese");
+	
 	int A, B, sum;
 
 	printf("Insira dois valores inteiros abaixo e lhe daremos a somas dos valores:\n");
