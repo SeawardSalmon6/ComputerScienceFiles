@@ -17,7 +17,6 @@ int main() {
 // b) 2<5 ou 15/3=5 .V.
 	expression = (2 < 5) || ((15 / 3) == 5);
 	printf("b. %s \n", expression ? "Verdadeiro" : "Falso");
- 
 
 // c) F ou 20 div(18/3) <> (21/3) div 2 .F.
 	div_t div1, div2;
