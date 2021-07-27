@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <locale.h>
 
 int main() {
@@ -8,3 +9,5 @@ int main() {
 
 	return 0;
 }
+
+// replit alias crl='g++ -o main $1'
