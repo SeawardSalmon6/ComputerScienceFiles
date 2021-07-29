@@ -5,51 +5,28 @@
 int main() {
     setlocale(LC_ALL, "Portuguese");
 
-    char c[31];
+    unsigned char letter, password[31] = { 0 };
     
-    printf("\n\nDigite uma senha de, no máximo, 30 caracteres: ");;
-    scanf(" %s", c);
+    printf("\n\nDigite uma senha de, no máximo, 30 caracteres: ");
+    scanf(" %s", password);
 
     int i = 0;
-    char transicao, estado = 'A';
+    char state = 'T';
 
     do {
-        transicao = c[i];
+        letter = password[i];
 
-        switch(estado) {
-            case 'A':
-                if(transicao == 'a')
-                    estado = 'A';
-                else if(transicao == 'b')
-                    estado = 'B';
-                else
-                    estado = 'E';
-            break;
+        if((letter >= 65 && letter <= 90) || (letter == '\0')) state = 'T';
+        else state = 'F';
 
-            case 'B':
-                if(transicao == 'c')
-                    estado = 'C';
-                else
-                    estado = 'E';
-            break;
-
-            case 'C':
-                if(transicao == 'c')
-                    estado = 'C';
-                else if(transicao == '\0')
-                    estado = 'D';
-                else
-                    estado = 'E';
-            break;
-        }
         i++;
 
-    } while((estado != 'D') && (estado != 'E'));
+    } while(state != 'F' && letter != '\0');
 
-    if(estado == 'D')
-        printf("\n--> String válida!\n\n");
-    else if(estado == 'E')
-        printf("\n--> String inválida!\n\n");
+    if(state == 'T')
+        printf("\n--> Senha válida!\n\n");
+    else if(state == 'F')
+        printf("\n--> Senha inválida! Só aceitamos senhas com todas as letras maiúsculas.\n\n");
 
     return 0;
 }
