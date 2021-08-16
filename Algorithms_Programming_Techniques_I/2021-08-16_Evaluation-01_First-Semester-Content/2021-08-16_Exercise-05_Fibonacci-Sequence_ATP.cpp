@@ -24,25 +24,36 @@ int main() {
 
     } while(qtdElementos < 0 || qtdElementos > 20);
 
-    unsigned int arrFibonacci[qtdElementos] = { 0 }; // Inicializando o vetor
+    unsigned int arrFibonacci[qtdElementos]; // Inicializando o vetor
 
     // 1. Criar uma função que armazene em um vetor a sequência de Fibonacci
     unsigned int valorAntAnterior = 0, valorAnterior = 0;
 
-    for(int i = 0; i < qtdElementos; i++) {
-        arrFibonacci[i] = valorAnterior + valorAntAnterior;
+    for(int i = 0; i <= qtdElementos; i++) {
+        if(i > 1) {
+            arrFibonacci[i] = valorAnterior + valorAntAnterior;
         
-        valorAntAnterior = valorAnterior;
-        valorAnterior = arrFibonacci[i];
+            valorAntAnterior = valorAnterior;
+            valorAnterior = arrFibonacci[i];
 
-        printf("\nPos.%d - %d", i, arrFibonacci[i]);
+        } else if(i == 1) {
+			arrFibonacci[0] = 0;
+			
+            valorAnterior = 1;
+            arrFibonacci[i] = valorAnterior + valorAntAnterior;
+        }
     }
 
     // 2. Apresentar os valores em ordem inversa - "i--"
-    puts("\n================ SÉRIE DE FIBONACCI ================\n");
 
-    for(int i = qtdElementos - 1; i >= 0; i--)
+    system("clear"); // Limpa a tela
+
+    puts("\n\n================ SÉRIE DE FIBONACCI ================");
+
+    for(int i = qtdElementos; i >= 0; i--)
         printf("\nElemento %d -> %d", i, arrFibonacci[i]);
+
+    puts("\n\n");
 
     return 0;
 }
