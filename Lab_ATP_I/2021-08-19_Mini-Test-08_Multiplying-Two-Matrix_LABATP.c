@@ -19,7 +19,7 @@ int main() {
     // Loop para receber os valores da Matriz A
     for(int l = 0; l < A_LIN; l++)
         for(int c = 0; c < A_COL; c++) {
-            printf("\n\tValor da linha %d, coluna %d:  ", l, c);
+            printf("\n\tValor da linha %d, coluna %d:  ", l + 1, c + 1);
             scanf(" %d", &matA[l][c]);
         }
 
@@ -28,7 +28,7 @@ int main() {
     // Loop para receber os valores da Matriz A
     for(int l = 0; l < B_LIN; l++)
         for(int c = 0; c < B_COL; c++) {
-            printf("\n\tValor da linha %d, coluna %d:  ", l, c);
+            printf("\n\tValor da linha %d, coluna %d:  ", l + 1, c + 1);
             scanf(" %d", &matB[l][c]);
         }
 
