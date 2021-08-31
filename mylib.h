@@ -9,7 +9,7 @@
     2. Other Functions
     3. Arrays
     4. Matrix
- */
+*/
 
 // 0. Prototypes of all functions
     void printHeader(const char *header);
