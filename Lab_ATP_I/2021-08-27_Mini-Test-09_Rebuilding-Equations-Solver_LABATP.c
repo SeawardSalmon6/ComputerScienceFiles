@@ -5,7 +5,7 @@
 int main() {
     setlocale(LC_ALL, "Portuguese");
 
-    printf("\n\nResolução de Sistema Incompatível: A(4x3) ; B(4x1) \n\n");
+    printf("\n\nResolução de Sistema Incompatível: A(8x5) ; B(5x1) \n\n");
 
     const int qtdEquacoes = 8, qtdIncognitas = 5;
 
@@ -28,6 +28,7 @@ int main() {
             scanf(" %lf", &B[i][j]);
         }
 
+    system("clear");
     double AT[qtdIncognitas][qtdEquacoes];
 
     for(int i = 0; i < qtdIncognitas; i++)
