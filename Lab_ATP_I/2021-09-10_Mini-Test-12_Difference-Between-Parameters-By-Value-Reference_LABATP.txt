@@ -1,0 +1,9 @@
+Mini-Prova 12:
+
+“Explique, com um texto curto, qual a diferença entre a passagem de parâmetros por valor e por referência.”
+
+R- A passagem por parâmetros em funções, são os valores necessários para que a função funcione, inseridos entre parênteses ao chamar a função. Podemos passá-los de duas maneiras, por valor ou por referência.
+
+Passar os parâmetros por valor significam que quando colocamos o nome da variável como parâmetro, o seu valor será “copiado” para a execução da função, logo, o valor armazenado na variável, mesmo depois da execução da função, não será alterado. A função realizará seu processamento e retornará (ou não) o valor do processamento.
+
+Diferentemente da passagem por valores, a passagem por referência, referencia a variável que será passada como parâmetro, ou seja, após o processamento da função chamada, seu retorno refletirá no valor da variável também, atualizando seu valor.
