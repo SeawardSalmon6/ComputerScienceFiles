@@ -59,7 +59,7 @@ int main() {
                 printf("\t%d", matPrincipal[l][c]);
         }
 
-        printf("\n\n--------> A soma total da Diagonal Superior é de:  %d\n\n", somaDiagSup);
+    printf("\n\n--------> A soma total da Diagonal Superior é de:  %d\n\n", somaDiagSup);
 
     return 0;
 }

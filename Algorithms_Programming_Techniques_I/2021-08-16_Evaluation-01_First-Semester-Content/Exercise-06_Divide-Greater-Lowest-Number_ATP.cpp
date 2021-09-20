@@ -29,7 +29,6 @@ int main() {
             maiorValor = arrUsuario[i];
             menorValor = arrUsuario[i];
         } else {
-
             // Armazenando os valores dos extremos - maior e menor números
             if(arrUsuario[i] >= maiorValor) maiorValor = arrUsuario[i];
             if(arrUsuario[i] <= menorValor) menorValor = arrUsuario[i];
@@ -46,31 +45,16 @@ int main() {
     for(int i = 0; i < MAX_ARRAY; i++)
         printf("\n   Elemento nº %d  ->  %d", i + 1, arrUsuario[i]);
 
-    if(extDiferenca == 0) {
+    if(extDiferenca == 0)
         puts("\n---> O vetor não sofreu alteração, pois a diferença entre o maior e o menor número é igual a zero. Não é possível fazer divisão por zero!\n\n");
-
-    } else {
-
-        puts("\n\n\n=========== VETOR DIVIDO PELA DIFERENÇA DOS EXTREMOS ===========");
-
-        // Loop-For para apresentar o vetor original
-        double resDiv; // Variável de armazenamento
-        double newArray[MAX_ARRAY] = { 0 };
-
-        // Convertendo os valores inteiros do array original em um novo array do tipo double
-        for(int i = 0; i < MAX_ARRAY; i++)
-            newArray[i] = (double) arrUsuario[i];
-
+    else {
         // Dividindo os valores e apresentando na tela
-        for(int i = 0; i < MAX_ARRAY; i++) {
-            resDiv = newArray[i] / extDiferenca;
-            newArray[i] = resDiv;
-            
-            printf("\n   Elemento nº %d  ->  %.2lf", i + 1, newArray[i]);
-        }
+        puts("\n\n\n=========== VETOR DIVIDO PELA DIFERENÇA DOS EXTREMOS ===========");
+        for(int i = 0; i < MAX_ARRAY; i++)
+            printf("\n   Elemento nº %d  ->  %.2lf", i + 1, ((float) arrUsuario[i] / extDiferenca));
     }
 
-    puts("\n\n");   
+    puts("\n");   
 
     return 0;
 }
