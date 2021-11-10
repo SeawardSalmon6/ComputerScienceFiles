@@ -5,28 +5,34 @@
 
 #define MAX_STUDENTS 10
 
+typedef struct Aluno {
+	float eval1;
+	float eval2;
+	float gradesAvg;
+} tAluno;
+
 void getGrades(float*, float*);
-void printAllGrades(float*);
+void printAllGrades(tAluno*);
 float gradeAverage(float, float);
 
 int main() {
 	setlocale(LC_ALL, "Portuguese");
 
 	int i;
-	float eval1, eval2, gradesArr[MAX_STUDENTS] = { 0 };
+	tAluno listaAlunos[MAX_STUDENTS];
 
 	puts("\n--- Exercise 05 - Students Averages Array");
 	for(i = 0; i < MAX_STUDENTS; i++) {
 		printf("\n---------- Aluno %d", i + 1);
-		getGrades(&eval1, &eval2);
+		getGrades(&listaAlunos[i].eval1, &listaAlunos[i].eval2);
 
 		// storing grades into the array
-		gradesArr[i] = gradeAverage(eval1, eval2);
+		listaAlunos[i].gradesAvg = gradeAverage(listaAlunos[i].eval1, listaAlunos[i].eval2);
 
-		printf("\n----> Média Final: %.2f\n", gradesArr[i]);
+		printf("\n----> Média Final: %.2f\n", listaAlunos[i].gradesAvg);
 	}
 
-	printAllGrades(gradesArr);
+	printAllGrades(listaAlunos);
 	puts("\n");
 
 	return 0;
@@ -48,11 +54,11 @@ void getGrades(float *nt1, float *nt2) {
 	printf("\nNota 2: %.2f", *nt2);
 }
 
-void printAllGrades(float *arr) {
+void printAllGrades(tAluno *arr) {
 	printf("\n\n================== Todas as Notas");
 	for(int i = 0; i < MAX_STUDENTS; i++) {
 		printf("\n----- Aluno %d", i + 1);
-		printf("\n--> Média Final: %.2f\n", arr[i]);
+		printf("\n--> Média Final: %.2f\n", arr[i].gradesAvg);
 	}
 }
 
