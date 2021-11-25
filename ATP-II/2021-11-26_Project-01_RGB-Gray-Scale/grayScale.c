@@ -17,9 +17,9 @@ int main() {
     fscanf(fpr, "%d %d", &n, &k); // leitura da altura e largura da figura
     fprintf(fpw, "%d %d\n", n, k); // escrita no novo arquivo, a largura e altura lidas
 
-    // laco de repeticao para a leitura do arquivo "figura.dat" para cada uma de suas linhas (altura)
+    // laco para a leitura do arquivo "figura.dat" para cada uma de suas linhas (altura)
     for(j = 0; j < k; j++) {
-        // laco de repeticao buscando ler os pixels (grupos de tres) disponiveis em cada uma das linhas do arquivo (largura)
+        // laco para ler os pixels (grupos de tres) disponiveis em cada uma das linhas do arquivo (largura)
         for(i = 0; i < n; i++) {
             fscanf(fpr, "%d %d %d ", &r, &g, &b); // leitura dos valores RGB de cada pixel
             fprintf(fpw, "%d ", ((r + g + b) / 3)); // escrita do pixel reduzido em escala de cinza
