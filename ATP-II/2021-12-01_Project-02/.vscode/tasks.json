@@ -8,7 +8,7 @@
                 "-fdiagnostics-color=always",
                 "-g",
                 "-w",
-                "${file}"
+                "${file}",
             ],
             "options": {
                 "cwd": "${fileDirname}"

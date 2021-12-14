@@ -2,14 +2,25 @@
 #include <stdlib.h>
 #include <locale.h>
 
+double ArredondaBaixo(double numero, int casas) {
+	int i;
+	for(i = 0; i < casas; i++)
+		numero *= 10;
+
+	numero = (unsigned long long) numero;
+	for(i = 0; i < casas; i++)
+		numero /= 10;
+
+	return (numero);
+}
+
 int main() {
 	setlocale(LC_ALL, "Portuguese");
+	int p = 13;
+	double num = 3.141592653589793;
 
-	double counter;
-	int a = 5, b = 6;
-
-	counter = a / b;
-	printf("%lf\n", counter);
+	printf("\n--> O número %.*lf é igual a: %.*lf\n", p, num, p, num);
+	printf("\n--> (arredondado) O número %.*lf é igual a: %.*lf\n\n", p, num, p, ArredondaBaixo(num, p));
 
 	return 0;
 }
