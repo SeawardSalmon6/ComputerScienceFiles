@@ -2,18 +2,28 @@
 #include <math.h>
 #include <quadmath.h>
 
+// digite um número: 5
+// ler 5 valores
+/*
+	char format[20] = { 0 };
+	scanf(" %d", &quantidade);
+
+	for(int i = 0; i < quantidade; i++)
+		format = format & " %d";
+*/
+
 // protótipos das funções utilizadas/criadas
 int NumeroPCasa(__float128 parcial, int P, int aux);
 __float128 PrimeiroTermo(__float128 numAux);
 __float128 SegundoTermo(int expoente);
-double TerceiroTermo(int expoente);
+long double TerceiroTermo(int expoente);
 __float128 CalcularPI(int P);
 
 void LerQuantidadeCasas(int *P) {
 	do { // loop para forçar valores entre 1 <= P <= 20
 		printf("\nInsira a quantidade de casas decimais: ");
 		scanf(" %d", P);
-	} while(*P < 1 || *P > 20);
+	} while(*P < 1 || *P > 50);
 }
 
 int main()  {
@@ -51,8 +61,8 @@ __float128 SegundoTermo(int expoente) {
 	return (__float128) 1 / expoente;
 }
 
-double TerceiroTermo(int expoente) {
-	return pow(0.5, expoente);
+long double TerceiroTermo(int expoente) {
+	return powl(0.5, expoente);
 }
 
 // calcula o valor de PI, utilizando a fórmula de Newton + a função auxiliar acima
