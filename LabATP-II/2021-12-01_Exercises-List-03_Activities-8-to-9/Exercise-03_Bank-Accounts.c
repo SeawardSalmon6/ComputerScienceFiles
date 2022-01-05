@@ -13,8 +13,8 @@ typedef struct Pessoa {
 
 void ShowMenu(int*);
 void AddAccounts(tPessoa*, int*);
-void ShowAccounts(tPessoa*);
-void RemoveAccount(tPessoa*);
+void ShowAccounts(tPessoa*, int);
+void RemoveAccount(tPessoa*, int*);
 
 int main() {
 	setlocale(LC_ALL, "Portuguese");
@@ -31,10 +31,10 @@ int main() {
 				AddAccounts(UsersList, &lastUser);
 			break;
 			case 2: system("clear");
-				ShowAccounts(UsersList);
+				ShowAccounts(UsersList, lastUser);
 			break;
 			case 3: system("clear");
-				RemoveAccount(UsersList);
+				RemoveAccount(UsersList, &lastUser);
 			break;
 			case 4:
 				printf("\n-> Saindo... Obrigado por utilizar nosso aplicativo!\n\n");
@@ -66,25 +66,24 @@ int Continue(void) {
 		scanf(" %c", &resp);
 	} while((resp != 's' && resp != 'n') && (resp != 'S' && resp != 'N'));
 
-	if(resp == 'n' || resp == 'N') return 0;
-	else return 1;
+	return (resp == 'n' || resp == 'N') ? 0 : 1;
 }
 
-void AddAccounts(tPessoa *arr, int *last) {
+void AddAccounts(tPessoa *UsersList, int *last) {
 	printf("\n========= CADASTRAR CLIENTES =========\n");
 
 	for(int i = *last; i < MAX_ACCOUNTS; i++) {
 		printf("\n\n---------- Cliente %0d", i + 1);
 		printf("\n   Número da Conta Bancária: ");
-		scanf(" %u", &arr[i].accountNumber);
+		scanf(" %u", &UsersList[i].accountNumber);
 
 		printf("\n   Nome Completo: ");
-		scanf(" %[^\n]s", arr[i].name);
+		scanf(" %[^\n]", UsersList[i].name);
 
 		printf("\n   Saldo Disponível: ");
-		scanf(" %f", &arr[i].balance);
+		scanf(" %f", &UsersList[i].balance);
 
-		*last++;
+		*last = *last + 1;
 
 		if(Continue() == 0) break;
 	}
@@ -93,21 +92,21 @@ void AddAccounts(tPessoa *arr, int *last) {
 	getchar(); scanf("c");
 }
 
-void ShowAccounts(tPessoa *arr) {
+void ShowAccounts(tPessoa *UsersList, int last) {
 	int i, j = 0;
 	char srcName[50] = { 0 };
 
 	printf("\n========= APRESENTAR CONTAS DO CLIENTE =========\n");
 	printf("-> Insira o nome do cliente (igual ao do cadastro): ");
-	scanf(" %[^\n]s", srcName);
+	scanf(" %[^\n]", srcName);
 
 	printf("\n\n======= Contas de %s", srcName);
 
-	for(i = 0; i < MAX_ACCOUNTS; i++)
-		if(strcmp(srcName, arr[i].name)) {
+	for(i = 0; i < last; i++)
+		if(strcasecmp(srcName, UsersList[i].name) == 0) {
 			printf("\n\n----------- Conta %0d", j + 1);
-			printf("\n   -> Número da Conta: %u", arr[i].accountNumber);
-			printf("\n   -> Saldo da Conta: R$%.2f", arr[i].balance);
+			printf("\n   -> Número da Conta: %u", UsersList[i].accountNumber);
+			printf("\n   -> Saldo da Conta: R$%.2f", UsersList[i].balance);
 
 			j++;
 		}
@@ -119,27 +118,30 @@ void ShowAccounts(tPessoa *arr) {
 	getchar(); scanf("c");
 }
 
-void RemoveAccount(tPessoa *arr) {
+void RemoveAccount(tPessoa *UsersList, int *last) {
 	int i, j = -1;
-	float lower = arr[0].balance;
+	float lower = UsersList[0].balance;
 
 	printf("\n========= REMOVER CONTA DE MENOR SALDO =========\n");
 
-	for(i = 0; i < MAX_ACCOUNTS; i++)
-		if(arr[i].balance < lower && arr[i].accountNumber != 0) {
-			lower = arr[i].balance;
+	for(i = 0; i < *last; i++)
+		if(UsersList[i].balance < lower && UsersList[i].accountNumber != 0) {
+			lower = UsersList[i].balance;
 			j = i;
 		}
 
-	if(j > 0) {
-		printf("\n---> Aviso: a conta nº%0d, de %s será excluída!", arr[i].accountNumber, arr[i].name);
+	if(j >= 0) {
+		printf("\n---> Aviso: a conta nº%0d, de %s será excluída!", UsersList[i].accountNumber, UsersList[i].name);
 
-		printf("\n\n----------- Conta de %s", arr[j].name);
-		printf("\n   -> Número da Conta: %u", arr[j].accountNumber);
-		printf("\n   -> Saldo da Conta: R$%.2f", arr[j].balance);
+		printf("\n\n----------- Conta de %s", UsersList[j].name);
+		printf("\n   -> Número da Conta: %u", UsersList[j].accountNumber);
+		printf("\n   -> Saldo da Conta: R$%.2f", UsersList[j].balance);
 
-		arr[j].accountNumber = -1;
-		arr[j].balance = 0;
+		for(i = j + 1; i <= *last; i++) {
+			UsersList[i - 1].accountNumber = UsersList[i].accountNumber;
+			strcpy(UsersList[i - 1].name, UsersList[i].name);
+			UsersList[i - 1].balance= UsersList[i].balance;
+		}
 
 		printf("\n\n-----> A conta foi excluída com sucesso!");
 	} else
