@@ -2,7 +2,7 @@
 
 // Protótipos
 int Balanca(int, int, int);
-void OrdenarVetor(int*, int, int);
+void OrdenarVetor(int*, int);
 void ZerarVetor(int*, int);
 void EscreverSolucao();
 
@@ -27,14 +27,12 @@ int main() {
 
 	int Produtos[N];
 	LerDados(Produtos, N); // Lê os dados de Pesos e Produtos
-	OrdenarVetor(Pesos, M, 0); // Ordena o vetor Pesos em ordem crescente
-							   // (começa a triagem dos maiores primeiro)
 
     for(i = 0; i < N; i++) {
 		ZerarVetor(Solucao, M); // 'reinicia' o vetor Solucao
 
 		if(Balanca(Produtos[i], M - 1, 1)) {
-			OrdenarVetor(Solucao, M, 1); // ordena o vetor em ordem decrescente antes de escrever
+			OrdenarVetor(Solucao, M); // ordena o vetor em ordem decrescente antes de escrever
 			EscreverSolucao();
 		} else
 	        printf("0\n"); // caso não seja encontrada solução
@@ -61,19 +59,15 @@ void EscreverSolucao() {
 
 // Algoritmo de Ordenação (bubble-sort (2 a 2))
 // za identifica se o vetor será ordenado em ordem crescente ou descrecente
-void OrdenarVetor(int *arr, int size, int za) {
-	int i, aux, test;
-	do {
-		test = 0;
-
-		for(i = 0; i < size - 1; i++)
-			if((!za) ? (arr[i] > arr[i + 1]) : (arr[i] < arr[i + 1])) {
+void OrdenarVetor(int *arr, int size) {
+	int i, aux, lastnum;
+	for(lastnum = size - 1; lastnum >= 0; lastnum--)
+		for(i = 0; i < lastnum; i++)
+			if(arr[i] < arr[i + 1]) {
 				aux = arr[i];
 				arr[i] = arr[i + 1];
 				arr[i + 1] = aux;
-				test = 1;
 			}
-	} while(test == 1);
 }
 
 // retorna verdadeiro se existe solução, caso contrário, retorna falso
@@ -99,7 +93,7 @@ int Balanca(int produto, int M, int inverse) {
 	 - somente inicia se o próximo valor for negativo e
 	os nós principais (include e exclude)não encontrarem solução */
 	if(!include && !exclude && (produto - Pesos[M] < 0))
-		men_include = Balanca(-produto + Pesos[M], M - 1, -inverse);
+		men_include = Balanca(Pesos[M] - produto, M - 1, -inverse);
 
 	if(include || men_include) // caso sejam encontrados valores solução
         Solucao[M] = Pesos[M] * inverse; // multiplica pela inversão de valores
