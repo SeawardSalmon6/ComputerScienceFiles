@@ -49,26 +49,26 @@ void OrdenarVetor(int *arr, int size) {
 }
 
 // retorna verdadeiro se existe solução, caso contrário, retorna falso
-int Balanca(int produto, int M, int inverse) {
+int Balanca(int produto, int i, int inverse) {
     // se for encontrada um conjunto solução, retorna verdadeiro
 	// retornando o nó solução todo
     if(produto == 0)
         return (1);
 
     // se o índice for negativo ou o produto for negativo, retorna falso
-    if(M < 0 || produto < 0)
+    if(i < 0 || produto < 0)
         return (0);
 
     // testa o problema utilizando o Pesos[M]
-	if (Balanca(produto - Pesos[M], M - 1, inverse)) {
-		printf("%d ", Pesos[M] * inverse); // multiplica pela inversão de valores
+	if (Balanca(produto - Pesos[i], i - 1, inverse)) {
+		printf("%d ", Pesos[i] * inverse); // multiplica pela inversão de valores
 		return 1;
 	}
-	else if (Balanca(produto, M - 1, inverse))
+	else if (Balanca(produto, i - 1, inverse))
 		return 1;
-	else if ((produto - Pesos[M] < 0) && Balanca(Pesos[M] - produto, M - 1, -inverse)) {
-		printf("%d ", Pesos[M] * inverse); // multiplica pela inversão de valores
-		return 1;
+	else if ((produto - Pesos[i] < 0) && Balanca(Pesos[i] - produto, i - 1, -inverse)) {
+			printf("%d ", Pesos[i] * inverse); // multiplica pela inversão de valores
+			return 1;
 	}
 
 	return 0;
