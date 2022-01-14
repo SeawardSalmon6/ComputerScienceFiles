@@ -2,12 +2,11 @@
 
 // Protótipos
 int Balanca(int, int, int);
-void OrdenarVetor(int*, int, int);
 void ZerarVetor(int*, int);
 void EscreverSolucao();
 
 // Variáveis Globais
-int Pesos[20], Solucao[20], M;
+int Pesos[20], Solucao[20], M, K;
 
 void LerDados(int *Produtos, int N) {
 	int i;
@@ -27,15 +26,13 @@ int main() {
 
 	int Produtos[N];
 	LerDados(Produtos, N); // Lê os dados de Pesos e Produtos
-	OrdenarVetor(Pesos, M, 0);
 
     for(i = 0; i < N; i++) {
-		ZerarVetor(Solucao, M); // 'reinicia' o vetor Solucao
+		ZerarVetor(Solucao, M); K = 0; // 'reinicia' o vetor Solucao
 
-		if(Balanca(Produtos[i], M - 1, 1)) {
-			OrdenarVetor(Solucao, M, 1); // ordena o vetor em ordem decrescente antes de escrever
+		if(Balanca(Produtos[i], M - 1, 1))
 			EscreverSolucao();
-		} else
+		else
 	        printf("0\n"); // caso não seja encontrada solução
 	}
 
@@ -52,51 +49,38 @@ void ZerarVetor(int *arr, int size) {
 // Escreve o conjunto Solução para o produto solicitado
 void EscreverSolucao() {
 	int i;
-	for(i = 0; i < M; i++)
+	for(i = M - 1; i >= 0; i--)
 		if(Solucao[i] != 0)
 			printf("%d ", Solucao[i]);
 	printf("\n");
 }
 
-// Algoritmo de Ordenação (bubble-sort (2 a 2))
-// za identifica se o vetor será ordenado em ordem crescente ou descrecente
-void OrdenarVetor(int *arr, int size, int az) {
-	int i, aux, lastnum;
-	for(lastnum = size - 1; lastnum >= 0; lastnum--)
-		for(i = 0; i < lastnum; i++)
-			if ((!az) ? (arr[i] > arr[i + 1]) : (arr[i] < arr[i + 1])) {
-				aux = arr[i];
-				arr[i] = arr[i + 1];
-				arr[i + 1] = aux;
-			}
-}
-
 // retorna verdadeiro se existe solução, caso contrário, retorna falso
-int Balanca(int produto, int M, int inverse) {
+int Balanca(int produto, int idx, int inverse) {
     // se for encontrada um conjunto solução, retorna verdadeiro
 	// retornando o nó solução todo
     if(produto == 0)
         return (1);
 
     // se o índice for negativo ou o produto for negativo, retorna falso
-    if(M < 0 || produto < 0)
+    if(idx < 0 || produto < 0)
         return (0);
 
 	// testa o problema utilizando o Pesos[M]
-	if (Balanca(produto - Pesos[M], M - 1, inverse)) {
-		Solucao[M] = Pesos[M] * inverse; // multiplica pela inversão de valores
-		return 1;
+	if(Balanca(produto - Pesos[idx], idx - 1, inverse)) {
+		Solucao[K] = Pesos[idx] * inverse; K++; // multiplica pela inversão de valores
+		return (1);
 	}
-	else if (Balanca(produto, M - 1, inverse))
+	else if(Balanca(produto, idx - 1, inverse))
 		// caso a inserção do Pesos[M] não possuir solução, esse valor é omitido e testa-se o próximo
-		return 1;
-	else if ((produto - Pesos[M] < 0) && Balanca(Pesos[M] - produto, M - 1, -inverse)) {
+		return (1);
+	else if((produto - Pesos[idx] < 0) && Balanca(Pesos[idx] - produto, idx - 1, -inverse)) {
 		/* - somente inicia se o próximo valor for negativo e
 		os nós principais (include e exclude) não encontrarem solução */
-		Solucao[M] = Pesos[M] * inverse; // multiplica pela inversão de valores
-		return 1;
+		Solucao[K] = Pesos[idx] * inverse; K++; // multiplica pela inversão de valores
+		return (1);
 	}
 
     // retorna true se algum caminho utilizado encontrou solução
-    return 0;
+    return (0);
 }
