@@ -3,6 +3,7 @@
 // Prototipos
 int Balanca(int, int, int);
 void ZerarVetor(int*, int);
+void OrdenarVetor(int*, int);
 void EscreverSolucao();
 
 // Variaveis Globais
@@ -26,13 +27,15 @@ int main() {
 
 	int Produtos[N]; // declaracao do vetor Produtos
 	LerDados(Produtos, N); // le os dados de Pesos e Produtos
-	// *** PS: funciona assumindo que os pesos sejam lidos do menor para o maior :-)
+	OrdenarVetor(Pesos, M); // ordena o vetor em ordem crescente
 
     for(i = 0; i < N; i++) { // loop para acessar cada um dos produtos
 		ZerarVetor(Solucao, M); K = 0; // 'reinicia' o vetor Solucao
 
-		if(Balanca(Produtos[i], M - 1, 1)) // testa para buscar uma solucao
-			EscreverSolucao();
+		if(Balanca(Produtos[i], M - 1, 1))  {// testa para buscar uma solucao
+			OrdenarVetor(Solucao, K); // ordena o vetor Solucao em ordem crescente
+			EscreverSolucao(); // escreve em ordem decrescente
+		}
 		else
 	        printf("0\n"); // caso nao seja encontrada solucao, retorna 0
 	}
@@ -45,6 +48,18 @@ void ZerarVetor(int *arr, int size) {
 	int i;
 	for(i = 0; i < size; i++)
 		arr[i] = 0;
+}
+
+// Ordena um vetor em ordem crescente
+void OrdenarVetor(int *arr, int size) {
+	int i, top, aux;
+	for(top = size - 1; top >= 0; top--)
+		for(i = top; i < size - 1; i++)
+			if(arr[i] > arr[i + 1]) {
+				aux = arr[i];
+				arr[i] = arr[i + 1];
+				arr[i + 1] = aux;
+			}
 }
 
 // Escreve o conjunto Solucao para o produto solicitado
