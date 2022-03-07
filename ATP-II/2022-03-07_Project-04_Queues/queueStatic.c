@@ -23,7 +23,7 @@ int OrdenarInstantes(const void*, const void*);
 void EscreverFila(int*, int);
 int TemCaixaLivre(tCaixa*, int, int *, int );
 int OcuparCaixa(tCaixa*, tPessoa*, int*, int*, int, int*);
-void InserirNaFila(int*, tPessoa*, int*, int, int*);
+void InserirNaFila(tPessoa*, int*, int*, int, int*);
 
 int main() {
     int i, qtdCaixas;
@@ -57,13 +57,13 @@ void AbrirMercadao(tPessoa *ListaPessoas, int *Fila, int idxFila, int qtdCaixas)
         if(TemCaixaLivre(Caixas, ListaPessoas[i].instante, &posCaixa, qtdCaixas)) {
             daVezNaoEstaNaFila = OcuparCaixa(&Caixas[posCaixa], ListaPessoas, Fila, &posCabeca, i, &idxFila);
 
-            if(daVezNaoEstaNaFila)
-                InserirNaFila(Fila, ListaPessoas, &posCabeca, i, &idxFila);
-
             while(idxFila > 0 && TemCaixaLivre(Caixas, ListaPessoas[i].instante, &posCaixa, qtdCaixas))
                 daVezNaoEstaNaFila = OcuparCaixa(&Caixas[posCaixa], ListaPessoas, Fila, &posCabeca, i, &idxFila);
+
+			if(daVezNaoEstaNaFila)
+                InserirNaFila(ListaPessoas, Fila, &posCabeca, i, &idxFila);
         } else
-            InserirNaFila(Fila, ListaPessoas, &posCabeca, i, &idxFila);
+            InserirNaFila(ListaPessoas, Fila, &posCabeca, i, &idxFila);
 
         if(!(ListaPessoas[i].instante == ListaPessoas[i + 1].instante))
             EscreverFila(Fila, idxFila);
@@ -135,7 +135,7 @@ int OcuparCaixa(tCaixa *caixaLivre, tPessoa *ListaPessoas, int *Fila, int *posCa
     return res;
 }
 
-void InserirNaFila(int *Fila, tPessoa *ListaPessoas, int *posCabeca, int idxPessoa, int *idxFila) {
+void InserirNaFila(tPessoa *ListaPessoas, int *Fila, int *posCabeca, int idxPessoa, int *idxFila) {
     int i = 0, j;
 
     if(ListaPessoas[idxPessoa].idade > 64) {
