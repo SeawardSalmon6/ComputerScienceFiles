@@ -116,13 +116,22 @@ tPerson *MergeBoth(tPerson *first, tPerson *second) {
     else if(!second)
         return first;
 
-       if(first->arrivalTime <= second->arrivalTime) {
-           answer = first;
-           answer->nextArrival = MergeBoth(first->nextArrival, second);
-       } else {
-           answer = second;
-           answer->nextArrival = MergeBoth(first, second->nextArrival);
-       }
+        if(first->arrivalTime < second->arrivalTime) {
+            answer = first;
+            answer->nextArrival = MergeBoth(first->nextArrival, second);
+		} else if(first->arrivalTime == second->arrivalTime) {
+			if(first->age > 64 || second->age > 64)
+				if(second->age - first->age > 0) {
+					answer = second;
+					answer->nextArrival = MergeBoth(first, second->nextArrival);
+				} else {
+					answer = first;
+					answer->nextArrival = MergeBoth(first->nextArrival, second);
+				}
+        } else {
+            answer = second;
+            answer->nextArrival = MergeBoth(first, second->nextArrival);
+        }
 
        return answer;
 }
