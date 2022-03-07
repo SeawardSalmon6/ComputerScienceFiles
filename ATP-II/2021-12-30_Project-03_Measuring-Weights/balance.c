@@ -86,10 +86,12 @@ int Balanca(int produto, int idx, int inverse) {
 		Solucao[K] = Pesos[idx] * inverse; K++; // multiplica por 1 (se inverse == 1) ou -1 (quando inverse == -1)
 		return (1);
 	}
-	else if(Balanca(produto, idx - 1, inverse))
+
+	if(Balanca(produto, idx - 1, inverse))
 		// caso a inserção do Pesos[M] nao possuir solucao, esse valor e omitido e testa-se o proximo
 		return (1);
-	else if((produto - Pesos[idx] < 0) && Balanca(Pesos[idx] - produto, idx - 1, -inverse)) {
+
+	if(Balanca(Pesos[idx] - produto, idx - 1, -inverse)) {
 		/* - somente inicia se o proximo valor for negativo e
 		os nos principais (if's anteriores) nao encontrarem solucao */
 		Solucao[K] = Pesos[idx] * inverse; K++; // multiplica por 1 (se inverse == 1) ou -1 (quando inverse == -1)
