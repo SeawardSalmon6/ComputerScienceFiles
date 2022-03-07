@@ -10,65 +10,47 @@ typedef struct Person {
     struct Person *nextInQueue;
 } tPerson;
 
-typedef struct Cashier {
-    int available;
-    int nextAvailableTime;
-    struct Cashier *nextCashier;
-} tCashier;
-
 /* ======== Variáveis Globais */
 int qtdPessoas;
 
 /* ======== Protótipos de Funções */
+// --> Função Principal
 void AbrirMercadao(tPerson*, int*, int, int);
-void LerPessoas(tPerson*);
-int OrdenarInstantes(const void*, const void*);
+void LerPessoas(tPerson**); // -> Função de Leitura
+
+// --> Merge Sorting Methods
+void MergeSorting(tPerson**);
+void FindMiddle(tPerson*, tPerson**, tPerson**);
+tPerson *MergeBoth(tPerson*, tPerson*);
+
+// --> Tratamento da Fila Saída de Dados
 void EscreverFila(int*, int);
-int TemCaixaLivre(tCaixa*, int, int *, int );
-int OcuparCaixa(tCaixa*, tPerson*, int*, int*, int, int*);
 void InserirNaFila(tPerson*, int*, int*, int, int*);
 
+// --> Funções do Caixa
+int TemCaixaLivre(int*, int, int *, int );
+int OcuparCaixa(int*, tPerson*, int*, int*, int, int*);
+
+
+/* ======== Funções e Conteúdo Principal */
 int main() {
     int i, qtdCaixas;
 
     /* Leitura da Quantidade de Pessoas e Caixas */
     scanf(" %d %d", &qtdPessoas, &qtdCaixas);
 
-    tPerson *ListaPessoas = (tPerson*) malloc(sizeof(tPerson));
+    tPerson *ListaPessoas;
 
     LerPessoas(&ListaPessoas);
-    AbrirMercadao(ListaPessoas, Fila, 0, qtdCaixas);
+    // AbrirMercadao(ListaPessoas, Fila, 0, qtdCaixas);
+
+	free(ListaPessoas);
 
     return 0;
 }
 
-void AbrirMercadao(tPerson *ListaPessoas, int *Fila, int idxFila, int qtdCaixas) {
-    int i, daVezNaoEstaNaFila, posCabeca = 0, j = 0, posCaixa = 0;
-    tCaixa Caixas[qtdCaixas];
 
-    /* --> Configurar vetor de caixas */
-    for(i = 0; i < qtdCaixas; i++) {
-        Caixas[i].disponivel = 1;
-        Caixas[i].proxDisponivel = 0;
-    }
-
-    for(i = 0; i < qtdPessoas; i++) {
-        if(TemCaixaLivre(Caixas, ListaPessoas[i].instante, &posCaixa, qtdCaixas)) {
-            daVezNaoEstaNaFila = OcuparCaixa(&Caixas[posCaixa], ListaPessoas, Fila, &posCabeca, i, &idxFila);
-
-            while(idxFila > 0 && TemCaixaLivre(Caixas, ListaPessoas[i].instante, &posCaixa, qtdCaixas))
-                daVezNaoEstaNaFila = OcuparCaixa(&Caixas[posCaixa], ListaPessoas, Fila, &posCabeca, i, &idxFila);
-
-			if(daVezNaoEstaNaFila)
-                InserirNaFila(Fila, ListaPessoas, &posCabeca, i, &idxFila);
-        } else
-            InserirNaFila(Fila, ListaPessoas, &posCabeca, i, &idxFila);
-
-        if(!(ListaPessoas[i].instante == ListaPessoas[i + 1].instante))
-            EscreverFila(Fila, idxFila);
-    }
-}
-
+// --> Função de Leitura
 void LerPessoas(tPerson **listHead) {
     int i;
     tPerson *newPerson, *auxPerson = *listHead;
@@ -88,79 +70,162 @@ void LerPessoas(tPerson **listHead) {
     }
 
     /* --> Ordenar Vetor em função dos instantes de chegada */
-    qsort(vet, qtdPessoas, sizeof(tPerson), OrdenarInstantes);
+	MergeSorting(listHead);
 }
+
+
+/* ========= Merge Sorting */
+void MergeSorting(tPerson** head) {
+    tPerson *cur = *head;
+    tPerson *first;
+    tPerson *second;
+
+    if(!cur || !cur->nextArrival) return;
+
+    FindMiddle(cur, &first, &second);
+
+    MergeSorting(&first);
+    MergeSorting(&second);
+    *head = MergeBoth(first, second);
+}
+
+void FindMiddle(tPerson *cur, tPerson **first, tPerson** second) {
+    tPerson *fast;
+    tPerson *slow;
+    slow = cur;
+    fast = cur->nextArrival;
+
+    while(fast != NULL) {
+        fast = fast->nextArrival;
+        if(fast != NULL) {
+            slow = slow->nextArrival;
+            fast = fast->nextArrival;
+        }
+    }
+
+    *first = cur;
+    *second = slow->nextArrival;
+    slow->nextArrival = NULL;
+}
+
+tPerson *MergeBoth(tPerson *first, tPerson *second) {
+    tPerson *answer = NULL;
+
+    if(!first)
+        return second;
+    else if(!second)
+        return first;
+
+       if(first->arrivalTime <= second->arrivalTime) {
+           answer = first;
+           answer->nextArrival = MergeBoth(first->nextArrival, second);
+       } else {
+           answer = second;
+           answer->nextArrival = MergeBoth(first, second->nextArrival);
+       }
+
+       return answer;
+}
+
+
+// // --> Função Principal
+// void AbrirMercadao(tPerson *ListaPessoas, int *Fila, int idxFila, int qtdCaixas) {
+//     int i, daVezNaoEstaNaFila, posCabeca = 0, j = 0, posCaixa = 0;
+//     int Caixas[qtdCaixas];
+
+//     /* --> Configurar vetor de caixas */
+//     for(i = 0; i < qtdCaixas; i++)
+//         Caixas[i] = 0;
+
+//     for(i = 0; i < qtdPessoas; i++) {
+//         if(TemCaixaLivre(Caixas, ListaPessoas[i].instante, &posCaixa, qtdCaixas)) {
+//             daVezNaoEstaNaFila = OcuparCaixa(&Caixas[posCaixa], ListaPessoas, Fila, &posCabeca, i, &idxFila);
+
+// 			if(daVezNaoEstaNaFila)
+//                 InserirNaFila(ListaPessoas, Fila, &posCabeca, i, &idxFila);
+
+//             while(idxFila > 0 && TemCaixaLivre(Caixas, ListaPessoas[i].instante, &posCaixa, qtdCaixas))
+//                 daVezNaoEstaNaFila = OcuparCaixa(&Caixas[posCaixa], ListaPessoas, Fila, &posCabeca, i, &idxFila);
+//         } else
+//             InserirNaFila(ListaPessoas, Fila, &posCabeca, i, &idxFila);
+
+//         if(!(ListaPessoas[i].instante == ListaPessoas[i + 1].instante))
+//             EscreverFila(Fila, idxFila);
+//     }
+// }
 
 int OrdenarInstantes(const void *a, const void *b) {
     tPerson varA = *(tPerson*)a, varB = *(tPerson*)b;
-    if(varA.instante < varB.instante) return -1;
-    else if(varA.instante == varB.instante) {
-        if(varA.idade > 64 || varB.idade > 64)
-            return varB.idade - varA.idade;
+    if(varA.arrivalTime < varB.arrivalTime) return -1;
+    else if(varA.arrivalTime == varB.arrivalTime) {
+        if(varA.age > 64 || varB.age > 64)
+            return varB.age - varA.age;
         return 0;
     }
     else return 1;
 }
 
-void EscreverFila(int *Fila, int idxFila) {
-    int i;
-    if(Fila[0] > 0) {
-        for(i = 0; i < idxFila; i++)
-            printf("%d ", Fila[i]);
-    } else
-        printf("NULL");
-    printf("\n");
-}
 
-int TemCaixaLivre(tCaixa *vetCaixas, int t, int *posCaixa, int qtdCaixas) {
-    int i;
-    for(i = 0; i < qtdCaixas; i++)
-        if(vetCaixas[i].disponivel || t >= vetCaixas[i].proxDisponivel) {
-            *posCaixa = i;
-            return 1;
-        }
+// // --> Tratamento da Fila Saída de Dados
+// void EscreverFila(int *Fila, int idxFila) {
+//     int i;
+//     if(Fila[0] > 0) {
+//         for(i = 0; i < idxFila; i++)
+//             printf("%d ", Fila[i]);
+//     } else
+//         printf("NULL");
+//     printf("\n");
+// }
 
-    return 0;
-}
+// void InserirNaFila(tPerson *ListaPessoas, int *Fila, int *posCabeca, int idxPessoa, int *idxFila) {
+//     int i = 0, j;
 
-int OcuparCaixa(tCaixa *caixaLivre, tPerson *ListaPessoas, int *Fila, int *posCabeca, int idxPessoa, int *idxFila) {
-    int i, res = 0;
+//     if(ListaPessoas[idxPessoa].idade > 64) {
+//         while(Fila[i] > ListaPessoas[idxPessoa].idade)
+//             i++;
 
-    /* --> Remove e reposiciona valores da fila */
-    if(*idxFila > 0) {
-        idxPessoa = *posCabeca;
-        for(i = 0; i < *idxFila - 1; i++)
-            Fila[i] = Fila[i + 1];
+//         for(j = *idxFila; j > i; j--)
+//             Fila[j] = Fila[j - 1];
+//         *posCabeca = (!i) ? idxPessoa : *posCabeca;
 
-        Fila[i] = -1; *idxFila = *idxFila - 1;
-        *posCabeca = idxPessoa + 1;
-        res = 1;
-    }
+//         Fila[i] = ListaPessoas[idxPessoa].idade;
+//     } else
+//         Fila[*idxFila] = ListaPessoas[idxPessoa].idade;
 
-    /* --> Ocupa o caixa */
-    caixaLivre->disponivel = 0;
-    if(!caixaLivre->proxDisponivel)
-        caixaLivre->proxDisponivel = ListaPessoas[idxPessoa].instante + ListaPessoas[idxPessoa].tempo;
-    else
-        caixaLivre->proxDisponivel += ListaPessoas[idxPessoa].tempo;
+//     *idxFila = *idxFila + 1;
+// }
 
-    return res;
-}
 
-void InserirNaFila(tPerson *ListaPessoas, int *Fila, int *posCabeca, int idxPessoa, int *idxFila) {
-    int i = 0, j;
+// // --> Funções do Caixa
+// int TemCaixaLivre(int *vetCaixas, int t, int *posCaixa, int qtdCaixas) {
+//     int i;
+//     for(i = 0; i < qtdCaixas; i++)
+//         if(t >= vetCaixas[i]) {
+//             *posCaixa = i;
+//             return 1;
+//         }
 
-    if(ListaPessoas[idxPessoa].idade > 64) {
-        while(Fila[i] > ListaPessoas[idxPessoa].idade)
-            i++;
+//     return 0;
+// }
 
-        for(j = *idxFila; j > i; j--)
-            Fila[j] = Fila[j - 1];
-        *posCabeca = (!i) ? idxPessoa : *posCabeca;
+// int OcuparCaixa(int *caixaLivre, tPerson *ListaPessoas, int *Fila, int *posCabeca, int idxPessoa, int *idxFila) {
+//     int i, res = 0;
 
-        Fila[i] = ListaPessoas[idxPessoa].idade;
-    } else
-        Fila[*idxFila] = ListaPessoas[idxPessoa].idade;
+//     /* --> Remove e reposiciona valores da fila */
+//     if(*idxFila > 0) {
+//         idxPessoa = *posCabeca;
+//         for(i = 0; i < *idxFila - 1; i++)
+//             Fila[i] = Fila[i + 1];
 
-    *idxFila = *idxFila + 1;
-}
+//         Fila[i] = -1; *idxFila = *idxFila - 1;
+//         *posCabeca = idxPessoa + 1;
+//         res = 1;
+//     }
+
+//     /* --> Ocupa o caixa */
+//     if(*caixaLivre) *caixaLivre += ListaPessoas[idxPessoa].tempo;
+//     else
+//         *caixaLivre = ListaPessoas[idxPessoa].instante + ListaPessoas[idxPessoa].tempo;
+
+//     return res;
+// }
