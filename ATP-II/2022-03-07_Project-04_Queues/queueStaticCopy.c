@@ -8,27 +8,18 @@ typedef struct Pessoa {
     int tempo;
 } tPessoa;
 
-
 /* ======== Variáveis Globais */
 int qtdPessoas;
 
-
 /* ======== Protótipos de Funções */
-// --> Função Principal
 void AbrirMercadao(tPessoa*, int*, int, int);
-void LerPessoas(tPessoa*); // -> Função de Leitura
-
-// --> Tratamento da Fila Saída de Dados
+void LerPessoas(tPessoa*);
 int OrdenarInstantes(const void*, const void*);
 void EscreverFila(int*, int);
-void InserirNaFila(tPessoa*, int*, int*, int, int*);
-
-// --> Funções do Caixa
 int TemCaixaLivre(int*, int, int *, int );
 int OcuparCaixa(int*, tPessoa*, int*, int*, int, int*);
+void InserirNaFila(tPessoa*, int*, int*, int, int*);
 
-
-/* ======== Funções e Conteúdo Principal */
 int main() {
     int i, qtdCaixas;
 
@@ -47,8 +38,6 @@ int main() {
     return 0;
 }
 
-
-// --> Função Principal
 void AbrirMercadao(tPessoa *ListaPessoas, int *Fila, int idxFila, int qtdCaixas) {
     int i, daVezNaoEstaNaFila, posCabeca = 0, j = 0, posCaixa = 0;
     int Caixas[qtdCaixas];
@@ -61,11 +50,11 @@ void AbrirMercadao(tPessoa *ListaPessoas, int *Fila, int idxFila, int qtdCaixas)
         if(TemCaixaLivre(Caixas, ListaPessoas[i].instante, &posCaixa, qtdCaixas)) {
             daVezNaoEstaNaFila = OcuparCaixa(&Caixas[posCaixa], ListaPessoas, Fila, &posCabeca, i, &idxFila);
 
-			if(daVezNaoEstaNaFila)
-                InserirNaFila(ListaPessoas, Fila, &posCabeca, i, &idxFila);
-
             while(idxFila > 0 && TemCaixaLivre(Caixas, ListaPessoas[i].instante, &posCaixa, qtdCaixas))
                 daVezNaoEstaNaFila = OcuparCaixa(&Caixas[posCaixa], ListaPessoas, Fila, &posCabeca, i, &idxFila);
+
+			if(daVezNaoEstaNaFila)
+                InserirNaFila(ListaPessoas, Fila, &posCabeca, i, &idxFila);
         } else
             InserirNaFila(ListaPessoas, Fila, &posCabeca, i, &idxFila);
 
@@ -74,7 +63,6 @@ void AbrirMercadao(tPessoa *ListaPessoas, int *Fila, int idxFila, int qtdCaixas)
     }
 }
 
-// --> Função de Leitura
 void LerPessoas(tPessoa *vet) {
     int i;
     for(i = 0; i < qtdPessoas; i++)
@@ -95,8 +83,6 @@ int OrdenarInstantes(const void *a, const void *b) {
     else return 1;
 }
 
-
-// --> Tratamento da Fila Saída de Dados
 void EscreverFila(int *Fila, int idxFila) {
     int i;
     if(Fila[0] > 0) {
@@ -107,26 +93,6 @@ void EscreverFila(int *Fila, int idxFila) {
     printf("\n");
 }
 
-void InserirNaFila(tPessoa *ListaPessoas, int *Fila, int *posCabeca, int idxPessoa, int *idxFila) {
-    int i = 0, j;
-
-    if(ListaPessoas[idxPessoa].idade > 64) {
-        while(Fila[i] > ListaPessoas[idxPessoa].idade)
-            i++;
-
-        for(j = *idxFila; j > i; j--)
-            Fila[j] = Fila[j - 1];
-        *posCabeca = (!i) ? idxPessoa : *posCabeca;
-
-        Fila[i] = ListaPessoas[idxPessoa].idade;
-    } else
-        Fila[*idxFila] = ListaPessoas[idxPessoa].idade;
-
-    *idxFila = *idxFila + 1;
-}
-
-
-// --> Funções do Caixa
 int TemCaixaLivre(int *vetCaixas, int t, int *posCaixa, int qtdCaixas) {
     int i;
     for(i = 0; i < qtdCaixas; i++)
@@ -158,4 +124,22 @@ int OcuparCaixa(int *caixaLivre, tPessoa *ListaPessoas, int *Fila, int *posCabec
         *caixaLivre = ListaPessoas[idxPessoa].instante + ListaPessoas[idxPessoa].tempo;
 
     return res;
+}
+
+void InserirNaFila(tPessoa *ListaPessoas, int *Fila, int *posCabeca, int idxPessoa, int *idxFila) {
+    int i = 0, j;
+
+    if(ListaPessoas[idxPessoa].idade > 64) {
+        while(Fila[i] > ListaPessoas[idxPessoa].idade)
+            i++;
+
+        for(j = *idxFila; j > i; j--)
+            Fila[j] = Fila[j - 1];
+        *posCabeca = (!i) ? idxPessoa : *posCabeca;
+
+        Fila[i] = ListaPessoas[idxPessoa].idade;
+    } else
+        Fila[*idxFila] = ListaPessoas[idxPessoa].idade;
+
+    *idxFila = *idxFila + 1;
 }
