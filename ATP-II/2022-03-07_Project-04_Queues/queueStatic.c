@@ -15,7 +15,7 @@ int qtdPessoas;
 
 /* ======== Protótipos de Funções */
 // --> Função Principal
-void AbrirMercadao(tPessoa*, int*, int, int);
+void AbrirMercadao(tPessoa*, int);
 void LerPessoas(tPessoa*); // -> Função de Leitura
 
 // --> Tratamento da Fila Saída de Dados
@@ -35,25 +35,27 @@ int main() {
     /* Leitura da Quantidade de Pessoas e Caixas */
     scanf(" %d %d", &qtdPessoas, &qtdCaixas);
 
-    int Fila[qtdPessoas];
-    for(i = 0; i < qtdPessoas; i++)
-        Fila[i] = -1;
-
     tPessoa ListaPessoas[qtdPessoas];
 
     LerPessoas(ListaPessoas);
-    AbrirMercadao(ListaPessoas, Fila, 0, qtdCaixas);
+    AbrirMercadao(ListaPessoas, qtdCaixas);
 
     return 0;
 }
 
 
 // --> Função Principal
-void AbrirMercadao(tPessoa *ListaPessoas, int *Fila, int idxFila, int qtdCaixas) {
-    int i, daVezNaoEstaNaFila, posCabeca = 0, j = 0, posCaixa = 0;
-    int Caixas[qtdCaixas];
+void AbrirMercadao(tPessoa *ListaPessoas, int qtdCaixas) {
+    int i, daVezNaoEstaNaFila;
+	int idxFila = 0, posCabeca = 0, posCaixa = 0, j = 0;
+
+	/* --> Configurar Fila */
+	int Fila[qtdPessoas];
+    for(i = 0; i < qtdPessoas; i++)
+        Fila[i] = -1;
 
     /* --> Configurar vetor de caixas */
+	int Caixas[qtdCaixas];
     for(i = 0; i < qtdCaixas; i++)
         Caixas[i] = 0;
 
