@@ -52,7 +52,7 @@ int main() {
 // --> Função Principal
 void AbrirMercadao(tPessoa *ListaPessoas, int qtdCaixas) {
     int i, daVezNaoEstaNaFila;
-	int idxFila = 0, posCabeca = 0, posCaixa = 0, j = 0;
+	int idxFila = 0, posCabeca = 0, posCaixa = 0;
 
 	/* --> Configurar Fila */
 	tFila Fila[qtdPessoas];
@@ -82,13 +82,13 @@ void AbrirMercadao(tPessoa *ListaPessoas, int qtdCaixas) {
 }
 
 // --> Função de Leitura
-void LerPessoas(tPessoa *vet) {
+void LerPessoas(tPessoa *ListaPessoas) {
     int i;
     for(i = 0; i < qtdPessoas; i++)
-        scanf(" %d %d %d", &vet[i].idade, &vet[i].instante, &vet[i].tempo);
+        scanf(" %d %d %d", &ListaPessoas[i].idade, &ListaPessoas[i].instante, &ListaPessoas[i].tempo);
 
     /* Ordenar Vetor em função dos instantes de chegada */
-    qsort(vet, qtdPessoas, sizeof(tPessoa), OrdenarInstantes);
+    qsort(ListaPessoas, qtdPessoas, sizeof(tPessoa), OrdenarInstantes);
 }
 
 int OrdenarInstantes(const void *a, const void *b) {
