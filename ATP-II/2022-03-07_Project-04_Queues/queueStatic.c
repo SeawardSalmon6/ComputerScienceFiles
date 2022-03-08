@@ -8,6 +8,11 @@ typedef struct Pessoa {
     int tempo;
 } tPessoa;
 
+typedef struct Fila {
+	int idade;
+	int posicao;
+} tFila;
+
 
 /* ======== Variáveis Globais */
 int qtdPessoas;
@@ -20,12 +25,12 @@ void LerPessoas(tPessoa*); // -> Função de Leitura
 
 // --> Tratamento da Fila Saída de Dados
 int OrdenarInstantes(const void*, const void*);
-void EscreverFila(int*, int);
-void InserirNaFila(tPessoa*, int*, int*, int, int*);
+void EscreverFila(tFila*, int);
+void InserirNaFila(tPessoa*, tFila*, int*, int, int*);
 
 // --> Funções do Caixa
 int TemCaixaLivre(int*, int, int *, int );
-int OcuparCaixa(int*, tPessoa*, int*, int*, int, int*);
+int OcuparCaixa(int*, tPessoa*, tFila*, int*, int, int*);
 
 
 /* ======== Funções e Conteúdo Principal */
@@ -50,9 +55,9 @@ void AbrirMercadao(tPessoa *ListaPessoas, int qtdCaixas) {
 	int idxFila = 0, posCabeca = 0, posCaixa = 0, j = 0;
 
 	/* --> Configurar Fila */
-	int Fila[qtdPessoas];
+	tFila Fila[qtdPessoas];
     for(i = 0; i < qtdPessoas; i++)
-        Fila[i] = -1;
+        Fila[i].idade = Fila[i].posicao = -1;
 
     /* --> Configurar vetor de caixas */
 	int Caixas[qtdCaixas];
@@ -99,30 +104,38 @@ int OrdenarInstantes(const void *a, const void *b) {
 
 
 // --> Tratamento da Fila Saída de Dados
-void EscreverFila(int *Fila, int idxFila) {
+void EscreverFila(tFila *Fila, int idxFila) {
     int i;
-    if(Fila[0] > 0) {
+    if(Fila[0].idade > 0) {
         for(i = 0; i < idxFila; i++)
-            printf("%d ", Fila[i]);
+            printf("%d ", Fila[i].idade);
     } else
         printf("NULL");
     printf("\n");
 }
 
-void InserirNaFila(tPessoa *ListaPessoas, int *Fila, int *posCabeca, int idxPessoa, int *idxFila) {
+void InserirNaFila(tPessoa *ListaPessoas, tFila *Fila, int *posCabeca, int idxPessoa, int *idxFila) {
     int i = 0, j;
 
+	if(!*idxFila)
+		*posCabeca = idxPessoa;
+
     if(ListaPessoas[idxPessoa].idade > 64) {
-        while(Fila[i] > ListaPessoas[idxPessoa].idade)
+        while(Fila[i].idade > ListaPessoas[idxPessoa].idade)
             i++;
 
-        for(j = *idxFila; j > i; j--)
-            Fila[j] = Fila[j - 1];
-        *posCabeca = (!i) ? idxPessoa : *posCabeca;
+		if(!i) *posCabeca = idxPessoa;
+        for(j = *idxFila; j > i; j--) {
+            Fila[j].idade = Fila[j - 1].idade;
+			Fila[j].posicao = Fila[j - 1].posicao;
+		}
 
-        Fila[i] = ListaPessoas[idxPessoa].idade;
-    } else
-        Fila[*idxFila] = ListaPessoas[idxPessoa].idade;
+        Fila[i].idade = ListaPessoas[idxPessoa].idade;
+        Fila[i].posicao = idxPessoa;
+    } else {
+        Fila[*idxFila].idade = ListaPessoas[idxPessoa].idade;
+        Fila[*idxFila].posicao = idxPessoa;
+	}
 
     *idxFila = *idxFila + 1;
 }
@@ -140,17 +153,20 @@ int TemCaixaLivre(int *vetCaixas, int t, int *posCaixa, int qtdCaixas) {
     return 0;
 }
 
-int OcuparCaixa(int *caixaLivre, tPessoa *ListaPessoas, int *Fila, int *posCabeca, int idxPessoa, int *idxFila) {
+int OcuparCaixa(int *caixaLivre, tPessoa *ListaPessoas, tFila *Fila, int *posCabeca, int idxPessoa, int *idxFila) {
     int i, res = 0;
 
     /* --> Remove e reposiciona valores da fila */
     if(*idxFila > 0) {
         idxPessoa = *posCabeca;
-        for(i = 0; i < *idxFila - 1; i++)
-            Fila[i] = Fila[i + 1];
 
-        Fila[i] = -1; *idxFila = *idxFila - 1;
-        *posCabeca = idxPessoa + 1;
+        for(i = 0; i < *idxFila - 1; i++) {
+            Fila[i].idade = Fila[i + 1].idade;
+            Fila[i].posicao = Fila[i + 1].posicao;
+		}
+
+		*posCabeca = Fila[0].posicao;
+        Fila[i].idade = -1; *idxFila = *idxFila - 1;
         res = 1;
     }
 
