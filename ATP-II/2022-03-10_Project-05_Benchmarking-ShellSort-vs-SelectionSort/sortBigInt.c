@@ -38,12 +38,12 @@ int main() {
     ResetToOrigin(Original, VetorBiggos);
     RunShellSort(fShell, VetorBiggos);
 
-    /* ResetToOrigin(Original, VetorBiggos);
+    ResetToOrigin(Original, VetorBiggos);
     RunSelectionSort(fSelection, VetorBiggos);
 
-    ResetToOrigin(Original, VetorBiggos);
-    RunBubble(fBubble, VetorBiggos); */
-    
+    // ResetToOrigin(Original, VetorBiggos);
+    // RunBubble(fBubble, VetorBiggos);
+
     printf("\n");
 
     return 0;
@@ -62,13 +62,13 @@ void TrocaValorBiggos(BigInt *a, BigInt *b) {
 void ShellSort(BigInt *VetorBiggos) {
     int i, j, p, l, valHigh, valLow;
     int k[10] = { 1, 0 };
-    
+
     p = 1;
     while(k[p - 1] < NUMBERS_QUANTITY / 2) { // --> Calculando passo inicial
         k[p] = pPow(4, p) + 3 * pPow(2, p - 1) + 1;
         p++;
     } p--; // --> diminuição do índice maior que a quantidade de items
-    
+
     while(p > 0) {
         p--; // --> acertando o valor do passo para iteração atual
         for(l = 0; l < k[p]; l++) { // --> laço para executar insertion k[p] vezes
@@ -76,7 +76,7 @@ void ShellSort(BigInt *VetorBiggos) {
                 valHigh = VetorBiggos[i].high; // --> atribuir a valor o valor da posição
                 valLow = VetorBiggos[i].low; // --> atribuir a valor o valor da posição
                 j = i;
-                
+
                 while(j - k[p] >= 0 && VetorBiggos[j - k[p]].high >= valHigh) {
                     if(VetorBiggos[j - k[p]].high > valHigh) { // --> Verifica se o high é maior, se sim troca
                         VetorBiggos[j].high = VetorBiggos[j - k[p]].high;
@@ -170,7 +170,7 @@ void ResetToOrigin(BigInt *Original, BigInt *VetorBiggos) {
 
 int pPow(int a, int b) {
     int i, res = a;
-    
+
     if(!a) return 0;
     if(!b) return 1;
     for(i = 1; i < b; i++)
