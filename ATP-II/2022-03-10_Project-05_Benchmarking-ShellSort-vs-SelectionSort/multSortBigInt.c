@@ -11,9 +11,9 @@ typedef struct Biggo {
 } BigInt;
 
 /* ============== Métodos de Ordenação */
-void RunShellSort(FILE*, BigInt*);
-void RunSelection(FILE*, BigInt*);
-void RunBubble(FILE*, BigInt*);
+void RunShellSort(BigInt*);
+void RunSelectionSort(BigInt*);
+void RunBubble(BigInt*);
 void ShellSort(BigInt*);
 void SelectionSort(BigInt*);
 void BubbleSort(BigInt*);
@@ -28,21 +28,18 @@ int pPow(int, int);
 
 int main() {
     FILE *fr = fopen("bigint.dat", "r"); TestFile(fr);
-    FILE *fShell = fopen("shell.dat", "w"); TestFile(fShell);
-    FILE *fSelection = fopen("selection.dat", "w"); TestFile(fSelection);
-    FILE *fBubble = fopen("bubble.dat", "w"); TestFile(fBubble);
     BigInt Original[NUMBERS_QUANTITY], VetorBiggos[NUMBERS_QUANTITY];
 
     ReadData(fr, Original); fclose(fr);
 
     ResetToOrigin(Original, VetorBiggos);
-    RunShellSort(fShell, VetorBiggos);
+    RunShellSort(VetorBiggos);
 
     ResetToOrigin(Original, VetorBiggos);
-    RunSelectionSort(fSelection, VetorBiggos);
+    RunSelectionSort(VetorBiggos);
 
     // ResetToOrigin(Original, VetorBiggos);
-    // RunBubble(fBubble, VetorBiggos);
+    // RunBubble(VetorBiggos);
 
     printf("\n");
 
@@ -50,18 +47,15 @@ int main() {
 }
 
 void TrocaValorBiggos(BigInt *a, BigInt *b) {
-    BigInt tmp;
-    tmp.high = a->high;
-    tmp.low = a->low;
-    a->high = b->high;
-    a->low = b->low;
-    b->high = tmp.high;
-    b->low = tmp.low;
+    BigInt tmp = *a;
+    *a = *b;
+    *b = tmp;
 }
 
 void ShellSort(BigInt *VetorBiggos) {
-    int i, j, p, l, valHigh, valLow;
+    int i, j, p, l;
     int k[10] = { 1, 0 };
+	BigInt paraInserir;
 
     p = 1;
     while(k[p - 1] < NUMBERS_QUANTITY / 2) { // --> Calculando passo inicial
@@ -73,29 +67,25 @@ void ShellSort(BigInt *VetorBiggos) {
         p--; // --> acertando o valor do passo para iteração atual
         for(l = 0; l < k[p]; l++) { // --> laço para executar insertion k[p] vezes
             for(i = l + k[p]; i < NUMBERS_QUANTITY; i += k[p]) { // --> algoritmo insertion ajustado
-                valHigh = VetorBiggos[i].high; // --> atribuir a valor o valor da posição
-                valLow = VetorBiggos[i].low; // --> atribuir a valor o valor da posição
+                paraInserir = VetorBiggos[i]; // --> atribuir a valor o valor da posição
                 j = i;
 
-                while(j - k[p] >= 0 && VetorBiggos[j - k[p]].high >= valHigh) {
-                    if(VetorBiggos[j - k[p]].high > valHigh) { // --> Verifica se o high é maior, se sim troca
-                        VetorBiggos[j].high = VetorBiggos[j - k[p]].high;
-                        VetorBiggos[j].low = VetorBiggos[j - k[p]].low;
+                while(j - k[p] >= 0 && VetorBiggos[j - k[p]].high >= paraInserir.high) {
+					if((VetorBiggos[j - k[p]].high > paraInserir.high)
+                    || (VetorBiggos[j - k[p]].high >= 0 && VetorBiggos[j - k[p]].low > paraInserir.low)
+                    || (VetorBiggos[j - k[p]].high < 0 && VetorBiggos[j - k[p]].low < paraInserir.low))
+					{
+						VetorBiggos[j] = VetorBiggos[j - k[p]];
                         j = j - k[p];
-                    } else if(VetorBiggos[j - k[p]].low > valLow) { // --> Verifica se o low é maior, se sim, troca
-                        VetorBiggos[j].high = VetorBiggos[j - k[p]].high;
-                        VetorBiggos[j].low = VetorBiggos[j - k[p]].low;
-                        j = j - k[p];
-                    } else
+					} else
                         break;
                 }
 
-                VetorBiggos[j].high = valHigh;
-                VetorBiggos[j].low = valLow;
+                if(j != i)
+					VetorBiggos[j] = paraInserir;
             }
         }
     }
-    return;
 }
 
 void SelectionSort(BigInt *VetorBiggos) {
@@ -104,11 +94,16 @@ void SelectionSort(BigInt *VetorBiggos) {
 	// --> Seleção
 	for(i = 0; i < NUMBERS_QUANTITY; i++) {
 		nChave = i;
-		for(j = i + 1; j < NUMBERS_QUANTITY; j++)
-			if(VetorBiggos[nChave].high > VetorBiggos[j].high)
-				nChave = j;
-            else if(VetorBiggos[nChave].high == VetorBiggos[j].high && VetorBiggos[nChave].low > VetorBiggos[j].low)
-                nChave = j;
+		for(j = i + 1; j < NUMBERS_QUANTITY; j++) {
+			if(VetorBiggos[nChave].high >= VetorBiggos[j].high) {
+				if((VetorBiggos[nChave].high > VetorBiggos[j].high)
+				|| (VetorBiggos[nChave].high >= 0 && VetorBiggos[nChave].low > VetorBiggos[j].low)
+				|| (VetorBiggos[nChave].high < 0 && VetorBiggos[nChave].low < VetorBiggos[j].low))
+				{
+					nChave = j;
+				}
+			}
+		}
 
 		if(nChave != i)
             TrocaValorBiggos(&VetorBiggos[nChave], &VetorBiggos[i]);
@@ -133,13 +128,6 @@ void BubbleSort(BigInt *VetorBiggos) {
 		if(!troca)
 			break;
 	}
-}
-
-void WriteData(BigInt* VetorBiggos) {
-    int i;
-    for(i = 0; i < NUMBERS_QUANTITY; i++)
-        printf("(%d)  %d %d\n", i + 1, VetorBiggos[i].high, VetorBiggos[i].low);
-    printf("\n");
 }
 
 void WriteOnFile(FILE *fw, BigInt *VetorBiggos) {
@@ -179,7 +167,9 @@ int pPow(int a, int b) {
     return res;
 }
 
-void RunShellSort(FILE* fShell, BigInt *VetorBiggos) {
+void RunShellSort(BigInt *VetorBiggos) {
+    FILE *fShell = fopen("shell.dat", "w"); TestFile(fShell);
+
     gettimeofday(&begin, NULL);
     ShellSort(VetorBiggos);
     gettimeofday(&end, NULL);
@@ -189,7 +179,9 @@ void RunShellSort(FILE* fShell, BigInt *VetorBiggos) {
     fclose(fShell);
 }
 
-void RunSelectionSort(FILE* fSelection, BigInt *VetorBiggos) {
+void RunSelectionSort(BigInt *VetorBiggos) {
+    FILE *fSelection = fopen("selection.dat", "w"); TestFile(fSelection);
+
     gettimeofday(&begin, NULL);
     SelectionSort(VetorBiggos);
     gettimeofday(&end, NULL);
@@ -199,7 +191,9 @@ void RunSelectionSort(FILE* fSelection, BigInt *VetorBiggos) {
     fclose(fSelection);
 }
 
-void RunBubble(FILE* fBubble, BigInt *VetorBiggos) {
+void RunBubble(BigInt *VetorBiggos) {
+    FILE *fBubble = fopen("bubble.dat", "w"); TestFile(fBubble);
+
     gettimeofday(&begin, NULL);
     BubbleSort(VetorBiggos);
     gettimeofday(&end, NULL);

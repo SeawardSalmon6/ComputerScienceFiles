@@ -17,12 +17,12 @@ int main() {
 
     printf("\n--> Insira a quantidade de números a serem gerados: ");
     scanf(" %d", &NUMBERS_QUANTITY);
-    
+
     printf("\n--> Gerando números...");
 
     srand(time(NULL)); // --> Setting rand() seed
     for(i = 0; i < NUMBERS_QUANTITY; i++) {
-        nRandHigh = 2 * (rand() % 100) - 100;
+        nRandHigh = 2 * (rand() % __INT_MAX__) - __INT_MAX__;
         nRandLow = rand() % __INT_MAX__ + 1;
         fprintf(fw, "%d %d\n", nRandHigh, nRandLow);
     }
