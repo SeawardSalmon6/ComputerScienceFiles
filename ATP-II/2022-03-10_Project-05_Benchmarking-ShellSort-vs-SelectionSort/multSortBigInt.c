@@ -23,7 +23,6 @@ void SelectionSort(BigInt*);
 void TestFile(FILE*);
 void ReadData(FILE*, BigInt*, BigInt*);
 void EscreverNoArquivo(FILE*, BigInt*);
-int pPow(int, int);
 
 // ============= Início do Programa
 int main() {
