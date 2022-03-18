@@ -1,147 +1,144 @@
+// ============= Bibliotecas Utilizadas
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>
 
+// ============= Variáveis Globais
 struct timeval end, begin;
-#define NUMBERS_QUANTITY 200000
+const int NUMBERS_QUANTITY = 200000;
 
+// ============= Estrutura do Tipo de Dado BigInt
 typedef struct Biggo {
     int high;
     int low;
 } BigInt;
 
-/* ============== Métodos de Ordenação */
+// ============= Métodos de Ordenação */
 void RunShellSort(BigInt*);
 void RunSelectionSort(BigInt*);
-void RunBubble(BigInt*);
 void ShellSort(BigInt*);
 void SelectionSort(BigInt*);
-void BubbleSort(BigInt*);
 
 /* ============== Funções Auxiliares do Programa */
 void TestFile(FILE*);
-void ReadData(FILE*, BigInt*);
-void TrocaValorBiggos(BigInt*, BigInt*);
-void WriteOnFile(FILE*, BigInt*);
-void ResetToOrigin(BigInt*, BigInt*);
+void ReadData(FILE*, BigInt*, BigInt*);
+void EscreverNoArquivo(FILE*, BigInt*);
 int pPow(int, int);
 
+// ============= Início do Programa
 int main() {
+	// --> Declara as variáveis dos vetores utilizados e do arquivo de leitura
     FILE *fr = fopen("bigint.dat", "r"); TestFile(fr);
     BigInt Original[NUMBERS_QUANTITY], VetorBiggos[NUMBERS_QUANTITY];
 
-    ReadData(fr, Original); fclose(fr);
+	// --> Realiza a leitura dos dados do arquivo de leitura e popula os vetores
+    ReadData(fr, Original, VetorBiggos); fclose(fr); // --> Fecha o arquivo
 
-    ResetToOrigin(Original, VetorBiggos);
-    RunShellSort(VetorBiggos);
-
-    ResetToOrigin(Original, VetorBiggos);
+	// --> Funções que iniciam os processos de timer e ordenação
+    RunShellSort(Original);
     RunSelectionSort(VetorBiggos);
-
-    // ResetToOrigin(Original, VetorBiggos);
-    // RunBubble(VetorBiggos);
 
     printf("\n");
 
     return 0;
 }
 
-void TrocaValorBiggos(BigInt *a, BigInt *b) {
-    BigInt tmp = *a;
-    *a = *b;
-    *b = tmp;
-}
-
+// ============= Método Shell Sort
 void ShellSort(BigInt *VetorBiggos) {
-    int i, j, p, l;
-    int k[10] = { 1, 0 };
+    int i, j, p, l; // --> Variáveis auxiliares da função
 	BigInt paraInserir;
 
-    p = 1;
-    while(k[p - 1] < NUMBERS_QUANTITY / 2) { // --> Calculando passo inicial
-        k[p] = pPow(4, p) + 3 * pPow(2, p - 1) + 1;
-        p++;
-    } p--; // --> diminuição do índice maior que a quantidade de items
+	// --> Vetor com os passos, de acordo com a sequência de Sedgewick;
+	// Como a quantidade de elementos é sempre a mesma, os passos estão
+	// restritos até um dado passo
+    int k[10] = { 1, 8, 23, 77, 281, 1073, 4193, 16577, 65921, 262913 };
 
-    while(p > 0) {
-        p--; // --> acertando o valor do passo para iteração atual
-        for(l = 0; l < k[p]; l++) { // --> laço para executar insertion k[p] vezes
-            for(i = l + k[p]; i < NUMBERS_QUANTITY; i += k[p]) { // --> algoritmo insertion ajustado
-                paraInserir = VetorBiggos[i]; // --> atribuir a valor o valor da posição
-                j = i;
+    /* ======== Passos de acordo com a Sequência de Sedgewick
+		--> O cáculo dos passos pode ser implementado da seguinte forma:
 
+		p = 1; // --> Com a primeira posição de k[] já com o valor 1 (passo inicial)
+		while(k[p - 1] < NUMBERS_QUANTITY / 2) { // --> Calcula os passos
+			k[p] = pow(4, p) + 3 * pow(2, p - 1) + 1;
+			p++;
+		} p--; // --> Diminuição do índice maior que a quantidade de item
+	*/
+
+	p = 9; // --> Começa pelo maior passo
+    while(p != 1) { // --> Loop que trabalha com os passos enquanto este for != de 1
+        p--; // --> Acertando o valor do passo para iteração atual
+        for(l = 0; l < k[p]; l++) { // --> Laço para executar o Insertion k[p] vezes
+            for(i = l + k[p]; i < NUMBERS_QUANTITY; i += k[p]) { // --> Algoritmo insertion ajustado para n posições
+                paraInserir = VetorBiggos[i]; // --> Atribuir a valor da posição a ser testado
+                j = i; // --> Marca o valor inicial de j para esta iteração
+
+				// --> Realiza as comparações já fazendo as devidas inserções
+				// --> Executa enquanto a posição testada possui high >= a posição testada
                 while(j - k[p] >= 0 && VetorBiggos[j - k[p]].high >= paraInserir.high) {
+
+					// --> Se alguma dessas proposições sejam verdadeiras, realiza a devida inserção
 					if((VetorBiggos[j - k[p]].high > paraInserir.high)
                     || (VetorBiggos[j - k[p]].high >= 0 && VetorBiggos[j - k[p]].low > paraInserir.low)
                     || (VetorBiggos[j - k[p]].high < 0 && VetorBiggos[j - k[p]].low < paraInserir.low))
 					{
 						VetorBiggos[j] = VetorBiggos[j - k[p]];
-                        j = j - k[p];
-					} else
+                        j = j - k[p]; // --> Atualiza o índice para o próximo loop
+					} else // --> Caso nenhum dos testes valha, sai do loop
                         break;
                 }
 
-                if(j != i)
+                if(j != i) // --> Se houveram trocas, insere o valor testado na posição correta
 					VetorBiggos[j] = paraInserir;
             }
         }
     }
 }
 
+// ============= Metódo Selection Sort
 void SelectionSort(BigInt *VetorBiggos) {
-	int i, j, nChave;
+	int i, j, nChave; // --> Variáveis auxiliares da função
+	BigInt aux;
 
-	// --> Seleção
-	for(i = 0; i < NUMBERS_QUANTITY; i++) {
-		nChave = i;
-		for(j = i + 1; j < NUMBERS_QUANTITY; j++) {
-			if(VetorBiggos[nChave].high >= VetorBiggos[j].high) {
+	// --> Loop exterior
+	for(i = 0; i < NUMBERS_QUANTITY - 1; i++) {
+		nChave = i; // --> Indica a primeira posição não ordenada
+		for(j = i + 1; j < NUMBERS_QUANTITY; j++) { // --> Realiza os testes a partir da posição
+			if(VetorBiggos[nChave].high >= VetorBiggos[j].high) { // --> Testa as possibilidades
 				if((VetorBiggos[nChave].high > VetorBiggos[j].high)
 				|| (VetorBiggos[nChave].high >= 0 && VetorBiggos[nChave].low > VetorBiggos[j].low)
 				|| (VetorBiggos[nChave].high < 0 && VetorBiggos[nChave].low < VetorBiggos[j].low))
 				{
-					nChave = j;
+					nChave = j; // --> Se alguma delas for verdadeira, anota a posição do menor valor atual
 				}
 			}
 		}
 
-		if(nChave != i)
-            TrocaValorBiggos(&VetorBiggos[nChave], &VetorBiggos[i]);
-	}
-}
-
-void BubbleSort(BigInt *VetorBiggos) {
-	int i, j, troca;
-
-	for(i = NUMBERS_QUANTITY - 1; i >= 0; i--) {
-		troca = 0;
-		for(j = 0; j < i; j++) {
-			if(VetorBiggos[j].high >= VetorBiggos[j + 1].high) {
-                TrocaValorBiggos(&VetorBiggos[j], &VetorBiggos[j + 1]);
-                troca = 1;
-			} else if(VetorBiggos[j].high == VetorBiggos[j + 1].high && VetorBiggos[j].low > VetorBiggos[j + 1].low) {
-                TrocaValorBiggos(&VetorBiggos[j], &VetorBiggos[j + 1]);
-                troca = 1;
-            }
+		if(nChave != i) { // --> Se encontrou alguma posição de troca, realiza a troca de posição
+			aux = VetorBiggos[nChave];
+			VetorBiggos[nChave] = VetorBiggos[i];
+			VetorBiggos[i] = aux;
 		}
-
-		if(!troca)
-			break;
 	}
 }
 
-void WriteOnFile(FILE *fw, BigInt *VetorBiggos) {
+// --> Escreve os resultados no arquivo especificado
+void EscreverNoArquivo(FILE *fw, BigInt *VetorBiggos) {
     int i;
     for(i = 0; i < NUMBERS_QUANTITY; i++)
         fprintf(fw, "%d %d\n", VetorBiggos[i].high, VetorBiggos[i].low);
 }
 
-void ReadData(FILE* fr, BigInt* VetorBiggos) {
+// --> Realiza a leitura dos dados, do arquivo especificado
+void ReadData(FILE* fr, BigInt* VetorBiggos, BigInt* Copy) {
     int i;
-    for(i = 0; i < NUMBERS_QUANTITY; i++)
+    for(i = 0; i < NUMBERS_QUANTITY; i++) // --> Lê os dados e armazena
         fscanf(fr, "%d %d", &VetorBiggos[i].high, &VetorBiggos[i].low);
+
+	// --> Realiza a cópia dos dados em um outro vetor (passado para o Selection)
+	for(i = 0; i < NUMBERS_QUANTITY; i++)
+		Copy[i] = VetorBiggos[i];
 }
 
+// --> Testa se o arquivo especificado foi devidamente aberto por fopen()
 void TestFile(FILE *fp) {
     if(!fp) {
         printf("\n--> Erro ao alocar memória. Saindo...\n\n");
@@ -149,56 +146,26 @@ void TestFile(FILE *fp) {
     }
 }
 
-void ResetToOrigin(BigInt *Original, BigInt *VetorBiggos) {
-    for(int i = 0; i < NUMBERS_QUANTITY; i++) {
-        VetorBiggos[i].high = Original[i].high;
-        VetorBiggos[i].low = Original[i].low;
-    }
-}
-
-int pPow(int a, int b) {
-    int i, res = a;
-
-    if(!a) return 0;
-    if(!b) return 1;
-    for(i = 1; i < b; i++)
-        res *= a;
-
-    return res;
-}
-
+// --> Função auxiliar que agrupa as operações a serem realizadas pelo Shell Sort
 void RunShellSort(BigInt *VetorBiggos) {
-    FILE *fShell = fopen("shell.dat", "w"); TestFile(fShell);
+    FILE *fShell = fopen("shell.dat", "w"); TestFile(fShell); // --> Abre e testa o arquivo
 
-    gettimeofday(&begin, NULL);
-    ShellSort(VetorBiggos);
-    gettimeofday(&end, NULL);
+    gettimeofday(&begin, NULL); // --> Marca o início da execução
+    ShellSort(VetorBiggos); // --> Realiza a ordenação
+    gettimeofday(&end, NULL); // --> Marca o fim da execução
 
+	// --> Realiza o print do tempo corrido
     printf("\n--> [SHELL SORT] Time Elapsed: %lf\n", (double) (end.tv_sec - begin.tv_sec + 1E-6 * (end.tv_usec - begin.tv_usec)));
-    WriteOnFile(fShell, VetorBiggos);
-    fclose(fShell);
+    EscreverNoArquivo(fShell, VetorBiggos); // --> Escreve o vetor ordenado no arquivo
+    fclose(fShell); // --> Fecha o arquivo e salva
 }
 
+// --> Função auxiliar que agrupa as operações a serem realizadas pelo Selection Sort
 void RunSelectionSort(BigInt *VetorBiggos) {
-    FILE *fSelection = fopen("selection.dat", "w"); TestFile(fSelection);
+    gettimeofday(&begin, NULL); // --> Marca o início da execução
+    SelectionSort(VetorBiggos); // --> Realiza a ordenação
+    gettimeofday(&end, NULL); // --> Marca o fim da execução
 
-    gettimeofday(&begin, NULL);
-    SelectionSort(VetorBiggos);
-    gettimeofday(&end, NULL);
-
+	// --> Realiza o print do tempo corrido
     printf("\n--> [SELECTION SORT] Time Elapsed: %lf\n", (double) (end.tv_sec - begin.tv_sec + 1E-6 * (end.tv_usec - begin.tv_usec)));
-    WriteOnFile(fSelection, VetorBiggos);
-    fclose(fSelection);
-}
-
-void RunBubble(BigInt *VetorBiggos) {
-    FILE *fBubble = fopen("bubble.dat", "w"); TestFile(fBubble);
-
-    gettimeofday(&begin, NULL);
-    BubbleSort(VetorBiggos);
-    gettimeofday(&end, NULL);
-
-    printf("\n--> [BUBBLE SORT] Time Elapsed: %lf\n", (double) (end.tv_sec - begin.tv_sec + 1E-6 * (end.tv_usec - begin.tv_usec)));
-    WriteOnFile(fBubble, VetorBiggos);
-    fclose(fBubble);
 }
