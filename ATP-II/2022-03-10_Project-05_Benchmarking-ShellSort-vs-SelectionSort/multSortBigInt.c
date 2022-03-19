@@ -35,7 +35,7 @@ int main() {
 
 	// --> Funções que iniciam os processos de timer e ordenação
     RunShellSort(Original);
-    RunSelectionSort(VetorBiggos);
+    // RunSelectionSort(VetorBiggos);
 
     printf("\n");
 
@@ -63,7 +63,7 @@ void ShellSort(BigInt *VetorBiggos) {
 	*/
 
 	p = 9; // --> Começa pelo maior passo
-    while(p != 1) { // --> Loop que trabalha com os passos enquanto este for != de 1
+    while(p > 0) { // --> Loop que trabalha com os passos enquanto este for != de 1
         p--; // --> Acertando o valor do passo para iteração atual
         for(l = 0; l < k[p]; l++) { // --> Laço para executar o Insertion k[p] vezes
             for(i = l + k[p]; i < NUMBERS_QUANTITY; i += k[p]) { // --> Algoritmo insertion ajustado para n posições
