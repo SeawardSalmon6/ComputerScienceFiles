@@ -35,7 +35,7 @@ int main() {
 
 	// --> Funções que iniciam os processos de timer e ordenação
     RunShellSort(Original);
-    // RunSelectionSort(VetorBiggos);
+    RunSelectionSort(VetorBiggos);
 
     printf("\n");
 
