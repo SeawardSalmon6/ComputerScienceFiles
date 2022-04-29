@@ -1,5 +1,3 @@
-package Lampada;
-
 public class Lampada {
   private boolean state = false;
 
