@@ -1,1 +1,8 @@
 .editorconfig
+
+# Java Class Files
+*.class
+
+# C Compiler Files
+main
+a.out

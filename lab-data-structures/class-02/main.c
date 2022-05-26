@@ -4,11 +4,11 @@
 
 int main()
 {
-  Lista *minhaLista;
-  TipoElem elem01 = {12, {"Hello"}};
-  Definir(minhaLista);
+	Lista *minhaLista;
+	TipoElem elem01 = {12, {"Hello"}};
+	Definir(minhaLista);
 
-  Impr_elem(elem01);
+	Impr_elem(elem01);
 
-  return 0;
+	return 0;
 }
