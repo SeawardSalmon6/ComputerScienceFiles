@@ -2,39 +2,7 @@
 #include <stdio.h>
 #include "lista.h"
 
-#define MAX 100
-#define TRUE 1
-#define FALSE 0
-#define boolean int
-
 // Implementação: Lista sequencial
-
-// Estruturas e tipos
-// -------------------------------
-// Tipo chave
-typedef int TipoChave;
-
-// Tipo registro
-typedef struct
-{
-  char nome[30];
-  // ... caso tenham mais campos
-} TipoDado;
-
-// Tipo elemento (registro + chave)
-typedef struct
-{
-  TipoChave chave;
-  TipoDado info;
-} TipoElem;
-
-// Tipo Lista (sequencial)
-typedef struct
-{
-  int nelem; // número de elementos
-  TipoElem arr[MAX + 1];
-} Lista;
-
 // Operações
 // -----------------------------------
 boolean Vazia(Lista *lista)
@@ -63,7 +31,7 @@ void Apagar(Lista *lista)
   lista->nelem = 0;
 }
 
-boolean Inserir_posic(TipoElem x, int pos, Lista *lista)
+boolean Inserir_posic(TipoElem novoElem, int pos, Lista *lista)
 {
   /* Insere x, que é um novo elemento na posição pos da Lista.
     Se L = a_1, a_2, ...., a_n, então temos a_1, a_2, ...., a_{pos-1}, x, a_{pos+1}, ..., an.
@@ -84,26 +52,26 @@ boolean Inserir_posic(TipoElem x, int pos, Lista *lista)
       lista->arr[q + 1] = lista->arr[q];
     }
 
-    lista->arr[pos] = x;
+    lista->arr[pos] = novoElem;
     lista->nelem++;
 
     return TRUE; // Inserção realizada com sucesso
   }
 }
 
-boolean Buscar(TipoChave x, Lista *lista, int *pos)
+boolean Buscar(TipoChave chaveBuscada, Lista *lista, int *pos)
 {
   /* Retorna true, se x ocorre na posição pos. Se x ocorre
     mais de uma vez, retorna a posição da primeira ocorrência.
     Se x não ocorre, retorna false.
-    OBS: Lista NAO-ORDENADA */
+  OBS: Lista NAO-ORDENADA */
 
   if (!Vazia(lista))
   {
     int i = 1;
     while (i <= lista->nelem)
     {
-      if (lista->arr[i].chave == x)
+      if (lista->arr[i].chave == chaveBuscada)
       {
         *pos = i;
         return TRUE;
@@ -131,10 +99,10 @@ void Remover_posic(int *pos, Lista *lista)
   lista->nelem--;
 }
 
-void Impr_elemn(TipoElem x)
+void Impr_elem(TipoElem elem)
 {
-  printf("Chave: %d\n", x.chave);
-  printf("Nome: %d\n", x.info.nome);
+  printf("Chave: %d\n", elem.chave);
+  printf("Nome: %d\n", elem.info.nome);
 }
 
 void Imprimir(Lista *lista)
@@ -156,7 +124,7 @@ int Tamanho(Lista *lista)
   return lista->nelem;
 }
 
-boolean Inserir_ord(TipoElem x, Lista *lista)
+boolean Inserir_ord(TipoElem novoElem, Lista *lista)
 {
   /* Insere novo elemento de form a a manter a lista ordenada (crescente).
     Devolve true (se sucesso), false c.c. */
@@ -164,21 +132,102 @@ boolean Inserir_ord(TipoElem x, Lista *lista)
 
   if (Vazia(lista))
   {
-    return Inserir_posic(x, i, lista);
+    return Inserir_posic(novoElem, i, lista);
   }
   else
   {
     while (i <= lista->nelem) // Encontra a posição de inserção
     {
-      if (x.chave < lista->arr[i].chave)
+      if (novoElem.chave < lista->arr[i].chave)
       {
-        return Inserir_posic(x, i, lista);
+        return Inserir_posic(novoElem, i, lista);
       }
       else
       {
         i++;
       }
     }
-    return Inserir_posic(x, i, lista); // Última posição
+    return Inserir_posic(novoElem, i, lista); // Última posição
   }
+}
+
+boolean Buscar_ord(TipoChave chaveBuscada, Lista *lista, int *pos)
+{
+  /* */
+
+  // Implementação de busca linear simples
+  if (!Vazia(lista))
+  {
+    int i = 1;
+    while (i <= lista->nelem)
+    {
+      if (lista->arr[i].chave >= chaveBuscada)
+      {
+        if (lista->arr[i].chave == chaveBuscada)
+        {
+          *pos = i;
+          return TRUE;
+        }
+        else
+        {
+          return FALSE; // Encontrou maior, então
+        }
+      }
+      else
+      {
+        i++;
+      }
+    }
+  }
+
+  return FALSE; // Não encontrou
+}
+
+boolean Busca_bin(TipoChave chaveBuscada, Lista *lista, int *pos)
+{
+  /* Retorna em pos, a posição da chaveBuscada na lista ORDENADA e true.
+    Se a chave não ocorre, retorna false */
+
+  // Implementação da busca binária
+  int inf = 1;            // Posição inferior
+  int sup = lista->nelem; // Posição superior
+  int meio;
+
+  while (sup >= inf)
+  {
+    meio = (inf + sup) / 2;
+
+    if (lista->arr[meio].chave == chaveBuscada)
+    {
+      *pos = meio;
+      return TRUE; // Sai da busca
+    }
+    else
+    {
+      if (lista->arr[meio].chave < chaveBuscada)
+      {
+        inf = meio + 1;
+      }
+      else
+      {
+        sup = meio - 1;
+      }
+    }
+  }
+
+  return FALSE; // Não encontrou
+}
+
+boolean Remover_ch(TipoChave chaveBuscada, Lista *lista)
+{
+  /* Remoção dada a chave. Retorna true, se removeu, ou false caso contrário */
+  int *pos;
+
+  if (Busca_bin(chaveBuscada, lista, pos)) // Procura via busca binária
+  {
+    Remover_posic(pos, lista);
+    return TRUE;
+  }
+
+  return FALSE;
 }
