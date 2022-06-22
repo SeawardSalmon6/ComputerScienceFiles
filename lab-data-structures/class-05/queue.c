@@ -27,7 +27,7 @@ boolean isQueueFull(Queue *queue)
 // Adds a new element at the end of the queue
 boolean insertInQueue(Queue *queue, DataType newElem)
 {
-  if (isQueueEmpty(queue))
+  if (isQueueFull(queue))
     return FALSE;
 
   queue->end = (queue->end + 1) % QUEUE_SIZE;
