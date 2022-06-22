@@ -7,7 +7,8 @@
 // tipo resgistro
 typedef struct
 {
-  char nome[30];
+  // char nome[30];
+  int idade;
   // dados...
 } tipo_dado;
 
@@ -32,6 +33,8 @@ int Tamanho(fila *);
 
 boolean Inicio_fila(fila *, int);
 
-void Imprimir_elem(fila *, int);
+void Imprimir_elem(int);
 
 void Imprimir(fila *);
+
+void Chamar_senhas(fila *, fila *);

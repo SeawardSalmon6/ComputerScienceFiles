@@ -58,19 +58,23 @@ boolean Inicio_fila(fila *q, int elem)
   return TRUE;
 }
 
-void Imprimir_elem(fila *q, int elem)
+void Imprimir_elem(int elem)
 {
-  printf("\n\t------ Sua Senha: %02d", elem);
+  printf("%02d ", elem);
 }
 
 void Imprimir(fila *q)
 {
-  int i = q->inicio;
-  while (i != q->fim)
+  int i = q->inicio + 1;
+  while (!Vazia(q) && i != q->fim + 1)
   {
-    Imprimir_elem(q, q->A[i]);
+    printf("| ");
+    Imprimir_elem(q->A[i]);
+    printf("| ");
     i = (i + 1) % tam_fila;
   }
+
+  printf("\n");
 }
 
 void Chamar_senhas(fila *norm, fila *pref)
@@ -80,18 +84,29 @@ void Chamar_senhas(fila *norm, fila *pref)
   if (!Vazia(pref))
   {
     Remover(pref, &elem);
-    Imprimir_elem(pref, elem);
+    printf("\nRemovido elem da lista preferencial: ");
+    Imprimir_elem(elem);
+  }
+  else
+  {
+    printf("\nLista preferencial vazia!!!");
   }
 
   if (!Vazia(norm))
   {
+    printf("\nRemovido elem da lista normal: ");
     Remover(norm, &elem);
-    Imprimir_elem(norm, elem);
+    Imprimir_elem(elem);
 
     if (!Vazia(norm))
     {
+      printf("\nRemovido elem da lista normal: ");
       Remover(norm, &elem);
-      Imprimir_elem(norm, elem);
+      Imprimir_elem(elem);
     }
+  }
+  else
+  {
+    printf("\nLista normal vazia!!!");
   }
 }
