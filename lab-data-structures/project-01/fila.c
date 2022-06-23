@@ -65,14 +65,21 @@ void Imprimir_elem(int elem)
 
 void Imprimir(fila *q)
 {
-  int i = q->inicio + 1;
-  while (!Vazia(q) && i != q->fim + 1)
+  if (!Vazia(q))
   {
+    int i = q->inicio + 1;
+
     printf("| ");
-    Imprimir_elem(q->A[i]);
-    printf("| ");
-    i = (i + 1) % tam_fila;
+    while (i != q->fim + 1)
+    {
+      Imprimir_elem(q->A[i]);
+      printf("| ");
+
+      i = (i + 1) % tam_fila;
+    }
   }
+  else
+    printf("--> Lista Vazia");
 
   printf("\n");
 }
@@ -84,29 +91,29 @@ void Chamar_senhas(fila *norm, fila *pref)
   if (!Vazia(pref))
   {
     Remover(pref, &elem);
-    printf("\nRemovido elem da lista preferencial: ");
+    printf("\n--> Elemento removido da Lista Preferencial: ");
     Imprimir_elem(elem);
   }
   else
-  {
-    printf("\nLista preferencial vazia!!!");
-  }
+    printf("\n--> A Lista Preferencial está vazia!");
 
   if (!Vazia(norm))
   {
-    printf("\nRemovido elem da lista normal: ");
-    Remover(norm, &elem);
+    Remover(pref, &elem);
+    printf("\n--> Elemento removido da Lista Normal: ");
     Imprimir_elem(elem);
 
     if (!Vazia(norm))
     {
-      printf("\nRemovido elem da lista normal: ");
-      Remover(norm, &elem);
+      Remover(pref, &elem);
+      printf("\n--> Elemento removido da Lista Normal: ");
       Imprimir_elem(elem);
     }
+    else
+      printf("\n--> A Lista Normal está vazia!");
   }
   else
-  {
-    printf("\nLista normal vazia!!!");
-  }
+    printf("\n--> A Lista Normal está vazia!");
+
+  printf("\n");
 }
