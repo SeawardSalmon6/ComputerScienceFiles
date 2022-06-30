@@ -2,196 +2,133 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Turma {
-  static final int MAX_ALUNOS = 40;
+	static final int MAX_ALUNOS = 40;
 
-  private String nomeTurma;
-  private ArrayList<Aluno> alunos;
-  private static int qtdAlunos;
+	private String nomeTurma;
+	private static int qtdAlunos = 0;
+	private ArrayList<Aluno> alunos = new ArrayList<>();
 
-  public Turma() {
-    this("", null);
-  }
+	public Turma() {
+		this("", null);
+	}
 
-  public Turma(String nomeTurma) {
-    this.setNomeTurma(nomeTurma);
-  }
+	public Turma(String nomeTurma) {
+		this.setNomeTurma(nomeTurma);
+	}
 
-  public Turma(String nomeTurma, ArrayList<Aluno> alunos) {
-    this.setNomeTurma(nomeTurma);
-    this.setAlunos(alunos);
-  }
+	public Turma(String nomeTurma, ArrayList<Aluno> alunos) {
+		this.setNomeTurma(nomeTurma);
+		this.setAlunos(alunos);
+	}
 
-  public String getNomeTurma() {
-    return nomeTurma;
-  }
+	public String getNomeTurma() {
+		return nomeTurma;
+	}
 
-  public static int getQtdAlunos() {
-    return qtdAlunos;
-  }
+	public static int getQtdAlunos() {
+		return qtdAlunos;
+	}
 
-  public ArrayList<Aluno> getAlunos() {
-    return alunos;
-  }
+	public ArrayList<Aluno> getAlunos() {
+		return alunos;
+	}
 
-  public static void setQtdAlunos(int qtdAlunos) {
-    if (qtdAlunos >= 0) {
-      Turma.qtdAlunos = qtdAlunos;
-    } else {
-      System.out.println("Valor atribuído é inválido!");
-    }
-  }
+	public static void setQtdAlunos(int qtdAlunos) {
+		if (qtdAlunos >= 0) {
+			Turma.qtdAlunos = qtdAlunos;
+		} else {
+			System.out.println("Valor atribuído é inválido!");
+		}
+	}
 
-  public void setAlunos(ArrayList<Aluno> alunos) {
-    this.alunos = alunos;
-  }
+	public void setAlunos(ArrayList<Aluno> alunos) {
+		this.alunos = alunos;
+	}
 
-  public void setNomeTurma(String nomeTurma) {
-    this.nomeTurma = nomeTurma;
-  }
+	public void setNomeTurma(String nomeTurma) {
+		this.nomeTurma = nomeTurma;
+	}
 
-  public static int mostrarMenu() {
-    Scanner sc = new Scanner(System.in);
-    int op;
+	public void novoAluno(Scanner sc) {
+		Aluno novoAluno = new Aluno();
+		char resp = 'n';
 
-    System.out.println("\n\n========= Gerenciar Alunos");
-    System.out.println(" [1] - Adicionar Aluno");
-    System.out.println(" [2] - Exibir Aluno");
-    System.out.println(" [3] - Remover Aluno");
-    System.out.println(" [4] - Cancelar");
+		System.out.print("\n- Insira o nome do aluno: ");
+		novoAluno.setNomeCompleto(sc.nextLine());
 
-    do {
-      System.out.print("\n---> Escolha uma opção: ");
-      op = sc.nextInt();
+		System.out.print("\n- Insira o RA do aluno: ");
+		novoAluno.setRa(sc.nextLine());
 
-      if (op < 1 || op > 4) {
-        System.out.println("\n--> Aviso: insira uma opção válida!\n");
-      }
-    } while (op < 1 || op > 4);
+		System.out.print("\n- Insira a idade do aluno: ");
+		novoAluno.setIdade(sc.nextInt());
+		sc.nextLine();
 
-    sc.close();
-    return op;
-  }
+		System.out.print("\n---> Deseja inserir os dados complementares (s/n)?  ");
+		resp = sc.next().charAt(0);
+		sc.nextLine();
 
-  public Aluno novoAluno() {
-    Scanner sc = new Scanner(System.in);
-    Aluno novoAluno = new Aluno();
+		if (Character.toLowerCase(resp) == 's') {
+			System.out.print("\n- Insira o CPF do aluno: ");
+			novoAluno.setCpf(sc.nextLine());
 
-    char resp = 'n';
+			System.out.print("\n- Insira o telefone do aluno: ");
+			novoAluno.setTelefone(sc.nextLine());
+		}
 
-    System.out.println("\n- Insira o nome do aluno: ");
-    novoAluno.setNomeCompleto(sc.nextLine());
+		this.adicionarAluno(novoAluno);
+	}
 
-    System.out.println("\n- Insira o RA do aluno: ");
-    novoAluno.setRa(sc.nextLine());
+	public void adicionarAluno(Aluno novoAluno) {
+		this.alunos.add(novoAluno);
+	}
 
-    System.out.println("\n---> Deseja inserir os dados complementares (s/n)?  ");
-    resp = sc.next().charAt(0);
+	public void removerAluno(Scanner sc) {
+		String nomeAluno;
 
-    if (Character.toLowerCase(resp) == 's') {
-      System.out.println("\n- Insira o CPF do aluno: ");
-      novoAluno.setCpf(sc.nextLine());
+		System.out.print("\n\n---> Insira o nome do aluno: ");
+		nomeAluno = sc.nextLine();
 
-      System.out.println("\n- Insira o telefone do aluno: ");
-      novoAluno.setTelefone(sc.nextLine());
+		this.removerAluno(nomeAluno);
+	}
 
-      System.out.println("\n- Insira a idade do aluno: ");
-      novoAluno.setIdade(sc.nextInt());
-    }
+	public void removerAluno(String nomeAluno) {
+		int posicao = this.buscarAluno(nomeAluno);
+		if (posicao >= 0) {
+			this.alunos.remove(posicao);
+		} else {
+			System.out.println("\n--> Aluno não encontrado!");
+		}
+	}
 
-    sc.close();
-    this.adicionarAluno(novoAluno);
-    return novoAluno;
-  }
+	private int buscarAluno(String nomeAluno) {
+		for (int i = 0; i < alunos.size(); i++) {
+			if (nomeAluno.equalsIgnoreCase(alunos.get(i).getNomeCompleto()))
+				return i;
+		}
+		return -1;
+	}
 
-  public void adicionarAluno(Aluno novoAluno) {
-    alunos.add(novoAluno);
-  }
+	public void exibeAluno(Scanner sc) {
+		String nomeAluno;
 
-  public void removerAluno(Aluno aluno) {
-    int posicao = this.buscarAluno(aluno);
-    if (posicao >= 0) {
-      alunos.remove(posicao);
-    } else {
-      System.out.println("\n--> Aluno não encontrado!");
-    }
-  }
+		System.out.print("\n\n---> Insira o nome do aluno: ");
+		nomeAluno = sc.nextLine();
 
-  public void removerAluno() {
-    Scanner sc = new Scanner(System.in);
-    String nomeAluno;
+		this.exibeAluno(nomeAluno);
+	}
 
-    System.out.print("\n\n---> Insira o nome do aluno: ");
-    nomeAluno = sc.nextLine();
+	public void exibeAluno(String nomeAluno) {
+		int posicao = this.buscarAluno(nomeAluno);
+		Aluno aluno = this.alunos.get(posicao);
 
-    this.removerAluno(nomeAluno);
-
-    sc.close();
-  }
-
-  public void removerAluno(String nomeAluno) {
-    int posicao = this.buscarAluno(nomeAluno);
-    if (posicao >= 0) {
-      alunos.remove(posicao);
-    } else {
-      System.out.println("\n--> Aluno não encontrado!");
-    }
-  }
-
-  private int buscarAluno(Aluno aluno) {
-    for (int i = 0; i < alunos.size(); i++) {
-      if (aluno.equals(alunos.get(i))) {
-        return i;
-      }
-    }
-    return -1;
-  }
-
-  private int buscarAluno(String nomeAluno) {
-    for (int i = 0; i < alunos.size(); i++) {
-      if (nomeAluno.equalsIgnoreCase(alunos.get(i).getNomeCompleto())) {
-        return i;
-      }
-    }
-    return -1;
-  }
-
-  public void exibeAluno() {
-    Scanner sc = new Scanner(System.in);
-    String nomeAluno;
-
-    System.out.print("\n\n---> Insira o nome do aluno: ");
-    nomeAluno = sc.nextLine();
-
-    this.exibeAluno(nomeAluno);
-
-    sc.close();
-  }
-
-  public void exibeAluno(Aluno aluno) {
-    int posicao = this.buscarAluno(aluno);
-    if (posicao >= 0) {
-      System.out.println("\n\n========= Aluno " + aluno.getNomeCompleto());
-      System.out.println("- RA: " + aluno.getRa());
-      System.out.println("- Idade: " + aluno.getIdade());
-      System.out.println("- CPF: " + aluno.getCpf());
-      System.out.println("- Telefone: " + aluno.getTelefone());
-    } else {
-      System.out.println("\n--> Aluno não encontrado!");
-    }
-  }
-
-  public void exibeAluno(String nomeAluno) {
-    int posicao = this.buscarAluno(nomeAluno);
-    Aluno aluno = alunos.get(posicao);
-
-    if (posicao >= 0) {
-      System.out.println("\n\n========= Aluno " + aluno.getNomeCompleto());
-      System.out.println("- RA: " + aluno.getRa());
-      System.out.println("- Idade: " + aluno.getIdade());
-      System.out.println("- CPF: " + aluno.getCpf());
-      System.out.println("- Telefone: " + aluno.getTelefone());
-    } else {
-      System.out.println("\n--> Aluno não encontrado!");
-    }
-  }
+		if (posicao >= 0) {
+			System.out.println("\n\n========= Aluno " + aluno.getNomeCompleto());
+			System.out.println("- RA: " + aluno.getRa());
+			System.out.println("- Idade: " + aluno.getIdade());
+			System.out.println("- CPF: " + aluno.getCpf());
+			System.out.println("- Telefone: " + aluno.getTelefone());
+		} else {
+			System.out.println("\n--> Aluno não encontrado!");
+		}
+	}
 }

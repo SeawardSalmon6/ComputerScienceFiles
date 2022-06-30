@@ -1,36 +1,55 @@
 public class Motorista {
+	private static int qtdMotoristas = 0;
+
+	private int idMotorista;
 	private String cnh;
 	private String nome;
 	private Data dataAdmissao;
 
-	public Motorista() {
-		this("", "", null);
+	// =============== Métodos da Classe
+	public String gerarDataAdmissao() {
+		return this.dataAdmissao.criarData();
 	}
 
-	public Motorista(String cnh, String nome, Data dataAdmissao) {
+	// =============== Construtores
+	public Motorista() {
+		this(++qtdMotoristas, "", "", null);
+	}
+
+	public Motorista(int idMotorista, String cnh, String nome, Data dataAdmissao) {
+		this.setIdMotorista(idMotorista);
 		this.setCnh(cnh);
 		this.setNome(nome);
 		this.setDataAdmissao(dataAdmissao);
 	}
 
-	public Data getDataAdmissao() {
-		return dataAdmissao;
+	// =============== Getters e Setters
+	public int getIdMotorista() {
+		return this.idMotorista;
 	}
 
 	public String getCnh() {
-		return cnh;
+		return this.cnh;
 	}
 
 	public String getNome() {
-		return nome;
+		return this.nome;
 	}
 
-	public void setCnh(String cnh) {
-		this.cnh = cnh;
+	public Data getDataAdmissao() {
+		return this.dataAdmissao;
+	}
+
+	public void setIdMotorista(int idMotorista) {
+		this.idMotorista = idMotorista;
 	}
 
 	public void setNome(String nome) {
 		this.nome = nome;
+	}
+
+	public void setCnh(String cnh) {
+		this.cnh = cnh;
 	}
 
 	public void setDataAdmissao(Data dataAdmissao) {

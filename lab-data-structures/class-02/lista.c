@@ -93,8 +93,9 @@ void Remover_posic(int *pos, Lista *lista)
 
 void Impr_elem(TipoElem elem)
 {
-	printf("Chave: %d\n", elem.chave);
+	printf("\nChave: %d\n", elem.chave);
 	printf("Nome: %s\n", elem.info.nome);
+	printf("--------------------\n");
 }
 
 void Imprimir(Lista *lista)
@@ -103,7 +104,8 @@ void Imprimir(Lista *lista)
 	int i;
 	if (!Vazia(lista))
 	{
-		for (i = 1; i < lista->nelem; i++)
+		printf("\n");
+		for (i = 1; i <= lista->nelem; i++)
 			Impr_elem(lista->arr[i]);
 	}
 }
@@ -168,7 +170,7 @@ boolean Busca_bin(TipoChave chaveBuscada, Lista *lista, int *pos)
 		Se a chave não ocorre, retorna false */
 
 	// Implementação da busca binária
-	int inf = 1;						// Posição inferior
+	int inf = 1;			// Posição inferior
 	int sup = lista->nelem; // Posição superior
 	int meio;
 

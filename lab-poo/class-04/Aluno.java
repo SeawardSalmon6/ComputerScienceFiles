@@ -1,85 +1,63 @@
 public class Aluno {
-  private String nomeCompleto;
-  private int idade;
-  private String ra;
-  private String telefone;
-  private String cpf;
+	private String nomeCompleto;
+	private int idade;
+	private String ra;
+	private String telefone;
+	private String cpf;
 
-  public Aluno() {
-    this("", 0, "", "", "");
-  }
+	public Aluno() {
+		this("", 0, "", "", "");
+	}
 
-  public Aluno(String nomeCompleto) {
-    this.setNomeCompleto(nomeCompleto);
-  }
+	public Aluno(String nomeCompleto, int idade, String ra, String telefone, String cpf) {
+		this.setNomeCompleto(nomeCompleto);
+		this.setIdade(idade);
+		this.setRa(ra);
+		this.setTelefone(telefone);
+		this.setCpf(cpf);
+	}
 
-  public Aluno(String nomeCompleto, int idade) {
-    this.setNomeCompleto(nomeCompleto);
-    this.setIdade(idade);
-  }
+	public String getNomeCompleto() {
+		return nomeCompleto;
+	}
 
-  public Aluno(String nomeCompleto, int idade, String ra) {
-    this.setNomeCompleto(nomeCompleto);
-    this.setIdade(idade);
-    this.setRa(ra);
-  }
+	public String getCpf() {
+		return cpf;
+	}
 
-  public Aluno(String nomeCompleto, int idade, String ra, String telefone) {
-    this.setNomeCompleto(nomeCompleto);
-    this.setIdade(idade);
-    this.setRa(ra);
-    this.setTelefone(telefone);
-  }
+	public int getIdade() {
+		return idade;
+	}
 
-  public Aluno(String nomeCompleto, int idade, String ra, String telefone, String cpf) {
-    this.setNomeCompleto(nomeCompleto);
-    this.setIdade(idade);
-    this.setRa(ra);
-    this.setTelefone(telefone);
-    this.setCpf(cpf);
-  }
+	public String getRa() {
+		return ra;
+	}
 
-  public String getNomeCompleto() {
-    return nomeCompleto;
-  }
+	public String getTelefone() {
+		return telefone;
+	}
 
-  public String getCpf() {
-    return cpf;
-  }
+	public void setNomeCompleto(String nomeCompleto) {
+		this.nomeCompleto = nomeCompleto;
+	}
 
-  public int getIdade() {
-    return idade;
-  }
+	public void setIdade(int idade) {
+		if (idade >= 0) {
+			this.idade = idade;
+		} else {
+			System.out.println("Valor atribuído é inválido!");
+		}
+	}
 
-  public String getRa() {
-    return ra;
-  }
+	public void setRa(String ra) {
+		this.ra = ra;
+	}
 
-  public String getTelefone() {
-    return telefone;
-  }
+	public void setTelefone(String telefone) {
+		this.telefone = telefone;
+	}
 
-  public void setNomeCompleto(String nomeCompleto) {
-    this.nomeCompleto = nomeCompleto;
-  }
-
-  public void setIdade(int idade) {
-    if (idade > 0) {
-      this.idade = idade;
-    } else {
-      System.out.println("Valor atribuído é inválido!");
-    }
-  }
-
-  public void setRa(String ra) {
-    this.ra = ra;
-  }
-
-  public void setTelefone(String telefone) {
-    this.telefone = telefone;
-  }
-
-  public void setCpf(String cpf) {
-    this.cpf = cpf;
-  }
+	public void setCpf(String cpf) {
+		this.cpf = cpf;
+	}
 }
