@@ -99,13 +99,13 @@ void Chamar_senhas(fila *norm, fila *pref)
 
   if (!Vazia(norm))
   {
-    Remover(pref, &elem);
+    Remover(norm, &elem);
     printf("\n--> Elemento removido da Lista Normal: ");
     Imprimir_elem(elem);
 
     if (!Vazia(norm))
     {
-      Remover(pref, &elem);
+      Remover(norm, &elem);
       printf("\n--> Elemento removido da Lista Normal: ");
       Imprimir_elem(elem);
     }

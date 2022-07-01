@@ -4,23 +4,21 @@ public class Passageiro {
 	private Data dataNascimento;
 	private String endereco;
 
+	// =============== Relacionamentos com Outras Classes
+	Passagem minhaPassagem;
+
+	// =============== Métodos da Classe
+	public String gerarDataNascimento() {
+		return this.dataNascimento.criarData();
+	}
+
+	public void atribuirPassagem(Passagem novaPassagem) {
+		this.minhaPassagem = novaPassagem;
+	}
+
+	// =============== Construtores
 	public Passageiro() {
 		this("", "", null, "");
-	}
-
-	public Passageiro(String rg) {
-		this.setRg(rg);
-	}
-
-	public Passageiro(String rg, String nome) {
-		this.setRg(rg);
-		this.setNome(nome);
-	}
-
-	public Passageiro(String rg, String nome, Data dataNascimento) {
-		this.setRg(rg);
-		this.setNome(nome);
-		this.setDataNascimento(dataNascimento);
 	}
 
 	public Passageiro(String rg, String nome, Data dataNascimento, String endereco) {
@@ -30,35 +28,44 @@ public class Passageiro {
 		this.setEndereco(endereco);
 	}
 
+	// =============== Getters e Setters
 	public String getRg() {
-		return rg;
-	}
-
-	public String getEndereco() {
-		return endereco;
-	}
-
-	public Data getDataNascimento() {
-		return dataNascimento;
+		return this.rg;
 	}
 
 	public String getNome() {
-		return nome;
+		return this.nome;
 	}
 
-	public void setEndereco(String endereco) {
-		this.endereco = endereco;
+	public Data getDataNascimento() {
+		return this.dataNascimento;
 	}
 
-	public void setDataNascimento(Data dataNascimento) {
-		this.dataNascimento = dataNascimento;
+	public String getEndereco() {
+		return this.endereco;
+	}
+
+	public Passagem getMinhaPassagem() {
+		return this.minhaPassagem;
+	}
+
+	public void setRg(String rg) {
+		this.rg = rg;
 	}
 
 	public void setNome(String nome) {
 		this.nome = nome;
 	}
 
-	public void setRg(String rg) {
-		this.rg = rg;
+	public void setDataNascimento(Data dataNascimento) {
+		this.dataNascimento = dataNascimento;
+	}
+
+	public void setEndereco(String endereco) {
+		this.endereco = endereco;
+	}
+
+	public void setMinhaPassagem(Passagem minhaPassagem) {
+		this.minhaPassagem = minhaPassagem;
 	}
 }

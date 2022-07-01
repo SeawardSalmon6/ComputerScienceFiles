@@ -1,39 +1,44 @@
 public class Hora {
-	private int segundos;
-	private int minutos;
 	private int horas;
+	private int minutos;
 
-	public Hora() {
-		this(0, 0, 0);
+	// ================= Métodos da Classe
+	public String criarHorario() {
+		return String.format("%02d", this.horas) + ":" + String.format("%02d", this.minutos);
 	}
 
-	public Hora(int segundos, int minutos, int horas) {
-		this.setSegundos(segundos);
-		this.setMinutos(minutos);
+	// ================= Construtores
+	public Hora() {
+		this(0, 0);
+	}
+
+	public Hora(int horas, int minutos) {
 		this.setHoras(horas);
+		this.setMinutos(minutos);
+	}
+
+	// ================= Getters e Setters
+	public int getHoras() {
+		return this.horas;
 	}
 
 	public int getMinutos() {
-		return minutos;
-	}
-
-	public int getHoras() {
-		return horas;
-	}
-
-	public int getSegundos() {
-		return segundos;
+		return this.minutos;
 	}
 
 	public void setHoras(int horas) {
-		this.horas = horas;
-	}
-
-	public void setSegundos(int segundos) {
-		this.segundos = segundos;
+		if (horas >= 0 && horas <= 23) {
+			this.horas = horas;
+		} else {
+			System.out.println("\n==!== AVISO: Insira horas válidas!");
+		}
 	}
 
 	public void setMinutos(int minutos) {
-		this.minutos = minutos;
+		if (minutos >= 0 && minutos <= 59) {
+			this.minutos = minutos;
+		} else {
+			System.out.println("\n==!== AVISO: Insira minutos válidos!");
+		}
 	}
 }
