@@ -4,6 +4,9 @@
 #include <math.h>
 #include "lib.h"
 
+int recordsCount;
+
+// Helpers
 void clearTerminalEOF()
 {
   char c;
@@ -19,24 +22,97 @@ void fillRecord(FILE *fp, TAluno record)
   int i;
 
   for (i = 0; i < RECORD_SIZE - (nDigits + nameSize + courseSize + 3); i++)
-    fprintf(fp, "#");
+    fprintf(fp, "%c", FILL_RECORD_CHARACTER);
 }
 
-void showMenu(FILE *fp, FILE *ind)
+Node *createNode(TIndexNode info)
+{
+  Node *tmp = (Node *)malloc(sizeof(Node));
+  if (tmp)
+  {
+    tmp->info = info;
+    tmp->prox = NULL;
+  }
+  return tmp ? tmp : NULL;
+}
+
+// Index File Access
+Node *getIndexListFromFile(FILE *ind, Node **lastIndexNode)
+{
+  char key[MAX_STRING_SIZE];
+  TIndexNode aux;
+  Node *tmp = NULL, *root = NULL;
+
+  ind = fopen(INDEX_FILENAME, "r");
+
+  if (!ind)
+  {
+    *lastIndexNode = NULL;
+    return NULL;
+  }
+
+  if (fscanf(ind, "%[^=]=%d\n", key, &recordsCount) <= 0 && strcmp(key, RECORDS_COUNT_KEY) != 0)
+    recordsCount = 0;
+
+  for (int i = 0; i < recordsCount; i++)
+  {
+    fscanf(ind, "%d;%d\n", &aux.raUnesp, &aux.pos);
+    if (!root)
+    {
+      root = createNode(aux);
+      tmp = root;
+    }
+    else
+    {
+      Node *newNode = createNode(aux);
+      tmp->prox = newNode;
+      tmp = newNode;
+    }
+  }
+
+  fclose(ind);
+  *lastIndexNode = tmp;
+
+  return root;
+}
+
+void setIndexesBackup(FILE *ind, Node *indexList)
+{
+  Node *aux;
+  ind = fopen(INDEX_FILENAME, "w");
+
+  if (!ind)
+  {
+    printf("\n--> Erro ao abrir o arquivo!\n\n");
+    exit(EXIT_FAILURE);
+  }
+
+  fprintf(ind, "%s=%d\n", RECORDS_COUNT_KEY, recordsCount);
+  aux = indexList;
+  while (aux)
+  {
+    fprintf(ind, "%d;%d\n", aux->info.raUnesp, aux->info.pos);
+    aux = aux->prox;
+  }
+
+  fclose(ind);
+}
+
+// Program Functions
+void showMenu(FILE *fp, Node **indexList, Node **lastIndexNode)
 {
   int op;
 
+  fp = fopen(LIST_FILENAME, "a+");
+
+  if (!fp)
+  {
+    printf("\n--> Erro ao abrir o arquivo!\n\n");
+    exit(EXIT_FAILURE);
+  }
+
   do
   {
-    fp = fopen(LIST_FILENAME, "a+");
-    ind = fopen(INDEX_FILENAME, "a+");
-
-    if (!fp || !ind)
-    {
-      printf("\n--> Erro ao abrir o arquivo!\n\n");
-      exit(EXIT_FAILURE);
-    }
-
     printf("\n===== MENU");
     printf("\n(1) Gravar Aluno");
     printf("\n(2) Buscar Aluno");
@@ -48,10 +124,11 @@ void showMenu(FILE *fp, FILE *ind)
     switch (op)
     {
     case 1:
-      readStudent(fp, ind);
+      readStudent(fp, indexList, lastIndexNode);
       break;
     case 2:
-      findStudent(fp, ind);
+      fclose(fp);
+      findStudent(fp, indexList);
       break;
     case 3:
       printf("\n--> Obrigado por utilizar nossa aplicação!\n\n");
@@ -63,14 +140,14 @@ void showMenu(FILE *fp, FILE *ind)
   } while (op != 3);
 
   fclose(fp);
-  fclose(ind);
 }
 
-void readStudent(FILE *fp, FILE *ind)
+void readStudent(FILE *fp, Node **indexList, Node **lastIndexNode)
 {
   TAluno aux;
+  TIndexNode indexAux;
+  Node *newNode;
   long pos;
-  char fillString[RECORD_SIZE];
 
   fseek(fp, 0, SEEK_END);
   pos = ftell(fp);
@@ -97,31 +174,50 @@ void readStudent(FILE *fp, FILE *ind)
 
   fprintf(fp, "%d;%s;%s;", aux.raUnesp, aux.nome, aux.curso);
   fillRecord(fp, aux);
-  fprintf(ind, "%d;%ld\n", aux.raUnesp, pos);
 
-  fclose(fp);
-  fclose(ind);
+  indexAux.pos = pos;
+  indexAux.raUnesp = aux.raUnesp;
+
+  if (!*indexList)
+  {
+    newNode = createNode(indexAux);
+    *indexList = newNode;
+    *lastIndexNode = newNode;
+  }
+  else
+  {
+    newNode = createNode(indexAux);
+    (*lastIndexNode)->prox = newNode;
+    *lastIndexNode = newNode;
+  }
+
+  recordsCount++;
 }
 
-void findStudent(FILE *fp, FILE *ind)
+void findStudent(FILE *fp, Node **indexList)
 {
-  int pos, ra, check = 0;
+  int ra, check = 0;
   char *token, line[RECORD_SIZE];
+  Node *aux;
+
+  fp = fopen(LIST_FILENAME, "a+");
+
+  if (!fp)
+  {
+    printf("\n--> Erro ao abrir o arquivo!\n\n");
+    exit(EXIT_FAILURE);
+  }
 
   printf("\n======= BUSCAR ALUNO\n");
   printf("\n--> Insira o RA do aluno: ");
   scanf(" %d", &ra);
 
-  while (!feof(ind) && fgets(line, RECORD_SIZE + 1, ind) != NULL)
+  aux = *indexList;
+  while (aux && !check)
   {
-    token = strtok(line, FIELDS_DELIMETER);
-
-    if (atoi(token) == ra)
+    if (aux->info.raUnesp == ra)
     {
-      token = strtok(NULL, FIELDS_DELIMETER);
-      pos = atoi(token);
-
-      fseek(fp, pos, SEEK_SET);
+      fseek(fp, aux->info.pos, SEEK_SET);
       if (fgets(line, RECORD_SIZE + 1, fp) != NULL)
       {
         token = strtok(line, FIELDS_DELIMETER);
@@ -133,16 +229,14 @@ void findStudent(FILE *fp, FILE *ind)
         token = strtok(NULL, FIELDS_DELIMETER);
 
         printf("\n--> Curso: %s", token);
-        token = strtok(NULL, FIELDS_DELIMETER);
-
         printf("\n");
       }
       check = 1;
     }
+
+    aux = aux->prox;
   }
 
   if (!check)
     printf("\n!-> O aluno especificado não foi encontrado!\n");
-
-  fclose(fp);
 }
