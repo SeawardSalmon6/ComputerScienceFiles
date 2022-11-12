@@ -318,7 +318,7 @@ void createDictionary(char **dictionary, const Node *root, char *binary, int i)
   if (isLeaf(root))
   {
     binary[i] = '\0';
-    strcpy(dictionary[root->c], binary);
+    memcpy(dictionary[root->c], binary, i);
   }
   else
   {
@@ -598,6 +598,9 @@ FILE *openFile(const char *filename, const char *mode)
 
 void showMenu(int *op)
 {
+  int resScan = 0;
+  char c;
+
   do
   {
     printf("\n===== ÁRVORE DE HUFFMAN");
@@ -606,8 +609,12 @@ void showMenu(int *op)
     printf("\n(0) Sair");
 
     printf("\n\n--> Digite a opção escolhida: ");
+    resScan = scanf(" %d", op);
 
-    if (scanf(" %d", op) && (*op < 0 && *op > 2))
+    while (!resScan && ((c = getchar()) == '\n' || c == EOF))
+      ;
+
+    if (!resScan || (*op < 0 && *op > 2))
       printf("\n!--> Insira uma opção válida!\n");
-  } while (*op < 0 && *op > 2);
+  } while (!resScan || (*op < 0 && *op > 2));
 }
