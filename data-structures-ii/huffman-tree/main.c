@@ -37,7 +37,7 @@ void clearMemory(Node **, unsigned char **, char **, unsigned long **, char ***)
  * -----> Files
  */
 void getFilename(char *, char *, char *);
-unsigned char *readTextFile(const char *);
+unsigned char *readTextFile(const char *, unsigned long *);
 Node *readHuffmanFile(Node *, const char *, const char *);
 FILE *openFile(const char *, const char *);
 
@@ -55,17 +55,18 @@ int getTreeHeight(const Node *);
  */
 unsigned char convertByteToChar(const char *);
 void convertCharToByte(unsigned char, char *);
-void createFrequencyTable(unsigned long *, const unsigned char *);
+void createFrequencyTable(unsigned long *, const unsigned char *, const unsigned long);
 int mountList(Node **, const unsigned long *);
 Node *generateHuffmanTree(Node *);
 void createDictionary(char **, const Node *, char *, int i);
-void writeHuffmanEncoding(const unsigned char *, char **, const int, const char *);
+void writeHuffmanEncoding(const unsigned char *, const unsigned long, char **, const int, const char *);
 void writeHuffmanFileHeader(const char *, Node *, const int);
 
 int main()
 {
   char textFilename[SIZE], hufFilename[SIZE], uncompressedFilename[SIZE];
   int lettersCount, op, height;
+  unsigned long filesize;
   unsigned char *text = NULL;
   unsigned long *freqTable = NULL;
   char **dictionary = NULL;
@@ -81,7 +82,7 @@ int main()
     switch (op)
     {
     case 1:
-      text = readTextFile(textFilename);
+      text = readTextFile(textFilename, &filesize);
       freqTable = (unsigned long *)calloc(SIZE, sizeof(unsigned long));
       if (!freqTable)
       {
@@ -89,7 +90,7 @@ int main()
         exit(1);
       }
 
-      createFrequencyTable(freqTable, text);
+      createFrequencyTable(freqTable, text, filesize);
 
       lettersCount = mountList(&root, freqTable);
       writeHuffmanFileHeader(hufFilename, root, lettersCount);
@@ -107,7 +108,7 @@ int main()
 
       createDictionary(dictionary, root, binary, 0);
 
-      writeHuffmanEncoding(text, dictionary, height, hufFilename);
+      writeHuffmanEncoding(text, filesize, dictionary, height, hufFilename);
       printf("\n--> Arquivo compactado com sucesso!\n\n");
 
       clearMemory(&root, &text, &binary, &freqTable, &dictionary);
@@ -150,14 +151,15 @@ void getFilename(char *textFilename, char *hufFilename, char *uncompressedFilena
   sprintf(uncompressedFilename, "%s%s%s%s", filename, HUF_OUT_SUFFIX, extension ? "." : "", extension ? extension : "");
 }
 
-unsigned char *readTextFile(const char *filename)
+unsigned char *readTextFile(const char *filename, unsigned long *filesize)
 {
   unsigned char *text;
-  long size;
+  unsigned long size;
   FILE *fp = openFile(filename, "rb");
 
   fseek(fp, 0, SEEK_END);
   size = ftell(fp);
+  *filesize = size;
 
   text = (unsigned char *)calloc(size + 1, sizeof(unsigned char));
   if (!text)
@@ -178,10 +180,10 @@ unsigned char *readTextFile(const char *filename)
   return text;
 }
 
-void createFrequencyTable(unsigned long *table, const unsigned char *text)
+void createFrequencyTable(unsigned long *table, const unsigned char *text, const unsigned long filesize)
 {
   int i = 0;
-  while (text[i] != '\0')
+  while (i < filesize)
     table[text[i++]]++;
 }
 
@@ -382,12 +384,12 @@ void concat(char *dest, const char *src, const int size)
   }
 }
 
-void writeHuffmanEncoding(const unsigned char *text, char **dictionary, const int height, const char *filename)
+void writeHuffmanEncoding(const unsigned char *text, const unsigned long filesize, char **dictionary, const int height, const char *filename)
 {
   const int maxLength = height * 128 + 1;
   char *codedText;
   int len, i, j;
-  long characters;
+  long characters, sizeCompact;
   FILE *fp = openFile(filename, "a");
 
   codedText = (char *)calloc(maxLength, sizeof(char));
@@ -398,7 +400,7 @@ void writeHuffmanEncoding(const unsigned char *text, char **dictionary, const in
   }
 
   i = j = 0;
-  while (text[i] != '\0')
+  while (i < filesize)
   {
     concat(codedText, dictionary[text[i]], maxLength);
     len = strlen(codedText);
@@ -424,11 +426,13 @@ void writeHuffmanEncoding(const unsigned char *text, char **dictionary, const in
 
   fprintf(fp, "\n%ld\n", characters);
 
-  printf("\n\t--> Total de Bytes do Arquivo Original: %ld\n", strlen((const char *)text));
-  printf("\n\t--> Total de Bytes do Arquivo Compactado: %ld\n", ftell(fp));
-  printf("\n\t--> Bytes Economizados: %ld (%02.2lf%%)\n", strlen((const char *)text) - ftell(fp), 100 * (double)ftell(fp) / strlen((const char *)text));
+  sizeCompact = ftell(fp);
+  printf("\n\t--> Total de Bytes do Arquivo Original: %ld\n", filesize);
+  printf("\n\t--> Total de Bytes do Arquivo Compactado: %ld\n", sizeCompact);
+  printf("\n\t--> Bytes Economizados: %ld (%02.2lf%%)\n", filesize - sizeCompact, 100 * (1 - (double)sizeCompact / filesize));
 
   free(codedText);
+  codedText = NULL;
   fclose(fp);
 }
 
@@ -556,6 +560,7 @@ Node *readHuffmanFile(Node *root, const char *hufFilename, const char *uncompres
   }
 
   free(text);
+  text = NULL;
   fclose(huf);
   fclose(out);
   return root;
