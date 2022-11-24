@@ -3,29 +3,11 @@
 
 struct graph
 {
-  int id;
   int vertexes;
   int **adjMatrix;
 };
 
 typedef struct graph *Graph;
-
-Graph cGraph(const int id)
-{
-  int i;
-  Graph g = (Graph)malloc(sizeof(struct graph));
-
-  if (!g)
-  {
-    printf("\n!--> Erro ao alocar memória!\n\n");
-    exit(1);
-  }
-
-  g->id = id;
-  g->vertexes = 0;
-  g->adjMatrix = NULL;
-  return g;
-}
 
 void initAdjMatrix(Graph g)
 {
@@ -57,21 +39,73 @@ void initAdjMatrix(Graph g)
   }
 }
 
-int main()
+Graph cGraph(const int vertexes)
 {
-  Graph myGraph;
+  int i;
+  Graph g = (Graph)malloc(sizeof(struct graph));
 
-  myGraph = cGraph(1);
-  myGraph->vertexes = 5;
-
-  initAdjMatrix(myGraph);
-
-  for (int i = 0; i < myGraph->vertexes; i++)
+  if (!g)
   {
-    for (int j = 0; j < myGraph->vertexes; j++)
-      printf("%d ", myGraph->adjMatrix[i][j]);
+    printf("\n!--> Erro ao alocar memória!\n\n");
+    exit(1);
+  }
+
+  g->vertexes = vertexes;
+  initAdjMatrix(g);
+  return g;
+}
+
+void printAdjMatrix(Graph g)
+{
+  int i, j;
+
+  printf("\n\n====== Matriz de Adjacência\n");
+
+  for (i = 0; i < g->vertexes; i++)
+  {
+    for (j = 0; j < g->vertexes; j++)
+      printf("%d ", g->adjMatrix[i][j]);
     printf("\n");
   }
+}
+
+int main()
+{
+  int i, j, r, vertexes;
+  char resp;
+  Graph myGraph;
+
+  printf("\n--> Insira a quantidade de vértices do grafo:\t");
+  r = scanf(" %d", &vertexes);
+
+  if (!r || vertexes < 0)
+  {
+    printf("\n!--> Insira um valor válido!\n\n");
+    exit(1);
+  }
+
+  myGraph = cGraph(vertexes); // Cria o grafo
+
+  for (i = 0; i < vertexes; i++)
+  {
+    printf("\n--> Ligações do Vértice %02d:\n", i + 1);
+
+    for (j = 0; j < vertexes; j++)
+    {
+      do
+      {
+        printf("\n\t--> Liga-se com o vértice %02d (s/n)?\t", j + 1);
+        r = scanf(" %c", &resp);
+
+        if (!r || (resp != 's' && resp != 'n'))
+          printf("\n!--> Digite uma opção válida!\n\n");
+      } while (!r || (resp != 's' && resp != 'n'));
+
+      myGraph->adjMatrix[i][j] = (resp == 's') ? 1 : 0;
+    }
+  }
+
+  printAdjMatrix(myGraph);
 
   return 0;
 }
