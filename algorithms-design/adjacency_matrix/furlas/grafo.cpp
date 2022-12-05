@@ -6,7 +6,7 @@ grafo *criaGrafo(int vertices, int arestas)
 {
   grafo *G = new grafo;
   G->qtdeDeVertices = vertices;
-  G->qtdeDearestas = arestas;
+  G->qtdeDeArestas = arestas;
   G->listaDeAdjacencias.resize(vertices);
   return G;
 }
@@ -138,4 +138,66 @@ int grauMaximo(grafo *G)
   }
 
   return max; // Theta(1)
+}
+
+void imprimeMatrizDeAdjacencia(int **matriz, const int tamanho)
+{
+  int i, j;
+
+  printf("\n");
+  for (i = 0; i < tamanho; i++)
+  {
+    for (j = 0; j < tamanho; j++)
+      printf("%d\t", matriz[i][j]);
+    printf("\n");
+  }
+}
+
+int **criarMatrizDeAdjacencia(grafo *G)
+{
+  int **m, i, j;
+  m = (int **)malloc(G->qtdeDeVertices * sizeof(int *));
+
+  for (i = 0; i < G->qtdeDeVertices; i++)
+    m[i] = (int *)calloc(G->qtdeDeVertices, sizeof(int));
+
+  i = 0;
+  for (vertice x : G->listaDeAdjacencias)
+  {
+    x = *x.adjacente;
+
+    while (!x.folha)
+    {
+      j = x.rotulo;
+      m[i][j] = 1;
+      x = *x.adjacente;
+    }
+
+    i++;
+  }
+
+  return m;
+}
+
+void removerAresta(int **mat, const int u, const int v)
+{
+  if (mat[u][0] < 0 || mat[v][0] < 0)
+    return;
+
+  mat[u][v] = 0;
+  mat[v][u] = 0;
+}
+
+void removerVertice(int **mat, const int u, const int tamanho)
+{
+  int i;
+
+  if (mat[u][0] < 0)
+    return;
+
+  for (i = 0; i < tamanho; i++)
+  {
+    mat[u][i] = -1;
+    mat[i][u] = -1;
+  }
 }

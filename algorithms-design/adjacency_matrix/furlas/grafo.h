@@ -13,7 +13,7 @@ typedef struct vertice
 typedef struct
 {
   int qtdeDeVertices;
-  int qtdeDearestas;
+  int qtdeDeArestas;
   std::vector<vertice> listaDeAdjacencias;
 } grafo;
 
@@ -24,5 +24,10 @@ void deletaGrafo(grafo *G);
 
 int grauVertice(grafo *G, int u);
 int grauMaximo(grafo *G);
+
+void imprimeMatrizDeAdjacencia(int **, const int);
+int **criarMatrizDeAdjacencia(grafo *);
+void removerVertice(int **, const int, const int);
+void removerAresta(int **, const int, const int);
 
 #endif // GRAFO_H
