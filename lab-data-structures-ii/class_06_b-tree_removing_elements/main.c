@@ -1,17 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define NMAXREGS 4
-#define MAX 4
-#define MIN 2
+#define NMAXREGS 2
+#define MAX 2
+#define MIN 1
 
-enum _bool
-{
-  false = 0,
-  true = 1
-};
-
-typedef enum _bool bool;
+#define BOOL int
+#define TRUE 1
+#define FALSE 0
 
 typedef struct no
 {
@@ -98,30 +94,30 @@ direita. A filha à esquerda da chave que subiu passa a ser filha à direita daq
   }
 }
 
-bool NoComMaisChavesQuePossivel(NoArvB *no)
+BOOL NoComMaisChavesQuePossivel(NoArvB *no)
 {
-  return (no->nregs > no->ordem);
+  return (no->nregs > MAX);
 }
 
-bool NoComMenosChavesQuePermitido(NoArvB *no)
+BOOL NoComMenosChavesQuePermitido(NoArvB *no)
 {
-  return (no->nregs < (no->ordem / 2));
+  return (no->nregs < MIN);
 }
 
-bool BuscaChaveNoArvB(NoArvB *no, int chave, int *pos)
+BOOL BuscaChaveNoArvB(NoArvB *no, int chave, int *pos)
 {
-  for ((*pos) = 0; (no->chaves[*pos] < chave) && (*pos) < no->nregs; (*pos)++)
+  for ((*pos) = 1; (no->chaves[*pos] < chave) && (*pos) < no->nregs; (*pos)++)
     ;
 
   /* "pos" contém a posição da chave no nó */
-  if (((*pos) < no->nregs) && (no->chaves[*pos] == chave))
-    return (true);
+  if (((*pos) <= no->nregs) && (no->chaves[*pos] == chave))
+    return (TRUE);
 
   /* "pos" contém a posição da árvore filha na qual a chave poderá ser encontrada */
-  return (false);
+  return (FALSE);
 }
 
-bool RemoveArvBRec(NoArvB **no, int chave, bool *underflow)
+BOOL RemoveArvBRec(NoArvB **no, int chave, BOOL *underflow)
 {
   int pos;
 
@@ -131,12 +127,12 @@ bool RemoveArvBRec(NoArvB **no, int chave, bool *underflow)
 
   if (BuscaChaveNoArvB(*no, chave, &pos))
   { /* a chave está no nó deste nível */
-    if ((*no)->filhos[pos] != NULL)
+    if ((*no)->filhos[pos - 1] != NULL)
     {
       /* O nó atual não é uma folha,
       então a chave precisa ser trocada pela antecessora, reduzindo ao caso de remoção na folha. */
 
-      TrocaChaveComAntecessora(*no, pos); /* troca a chave pela sua antecessora -- i.e., a
+      TrocaChaveComAntecessora(*no, pos - 1); /* troca a chave pela sua antecessora -- i.e., a
            chave mais à direita na árvore à esquerda. continua o procedimento recursivo para
            reencontrar e remover a chave do nó folha */
 
@@ -147,49 +143,47 @@ bool RemoveArvBRec(NoArvB **no, int chave, bool *underflow)
     }
     else
     { /* achou a chave no nó folha, então ela pode ser removida. */
-      RemoveChaveEmNo(*no, pos);
+      RemoveChaveEmNo(*no, pos - 1);
     }
     /* verifica se a folha ficou em underflow */
 
     (*underflow) = NoComMenosChavesQuePermitido(*no);
-    return (true); /* remoção bem sucedida */
+    return (TRUE); /* remoção bem sucedida */
   }
   else
   { /* procura a chave nos nós abaixo */
-    if ((*no)->filhos[pos] != NULL)
+    if ((*no)->filhos[pos - 1] != NULL)
     {
-      if (RemoveArvBRec(&((*no)->filhos[pos]), chave, underflow))
+      if (RemoveArvBRec(&((*no)->filhos[pos - 1]), chave, underflow))
       {
         /* a chave foi encontrada e removida da folha (raiz da árvore
         filha). Trata um possível underflow e verifica novamente se
         ele será propagado para cima (volta da recursão). */
         if (*underflow)
-          TrataNoComMenosChavesQuePermitido(no, pos);
+          TrataNoComMenosChavesQuePermitido(no, pos - 2);
         (*underflow) = NoComMenosChavesQuePermitido(*no);
-        return (true);
+        return (TRUE);
       }
       else
-      {
-        return (false); /* chego na folha e não achou a chave */
-      }
+        return (FALSE); /* chego na folha e não achou a chave */
     }
     else
     { /* estamos na raiz e a chave não está neste nível, logo ela não existe. */
-      (*underflow) = false;
-      return (false);
+      (*underflow) = FALSE;
+      return (FALSE);
     }
   }
 }
 
-bool RemoveArvB(ArvB **arvore, int chave)
+BOOL RemoveArvB(ArvB **arvore, int chave)
 {
+  BOOL underflow = FALSE;
+
   if ((*arvore) == NULL)
   {
-    printf("Erro em RemoveArvB: Árvore inexistente\n");
+    printf("\n!--> Erro em RemoveArvB: Árvore inexistente\n\n");
     exit(1);
   }
-
-  bool underflow = false;
 
   if (RemoveArvBRec(arvore, chave, &underflow))
   { /* A chave foi removida */
@@ -206,10 +200,10 @@ bool RemoveArvB(ArvB **arvore, int chave)
       free(no);
     }
 
-    return (true);
+    return (TRUE);
   }
 
-  return (false);
+  return (FALSE);
 }
 
 ArvB *criarNo(int item, ArvB *filho)
@@ -267,7 +261,7 @@ void divideNo(int item, int *pval, int pos, ArvB *no, ArvB *filho, ArvB **novoNo
   no->nregs--;
 }
 
-int procura(ArvB *noSelecionado, int val)
+BOOL procura(NoArvB *noSelecionado, int val)
 {
   int i;
   if (noSelecionado)
@@ -275,17 +269,74 @@ int procura(ArvB *noSelecionado, int val)
     for (i = 0; i < noSelecionado->nregs; i++)
     {
       if (procura(noSelecionado->filhos[i], val))
-        return 1;
+        return TRUE;
 
       if (noSelecionado->chaves[i + 1] == val)
-        return 1;
+        return TRUE;
     }
 
     if (procura(noSelecionado->filhos[i], val))
-      return 1;
+      return TRUE;
   }
 
-  return 0;
+  return FALSE;
+}
+
+void escreveArvB(ArvB *noSelecionado)
+{
+  int i;
+  if (noSelecionado)
+  {
+    for (i = 0; i < noSelecionado->nregs; i++)
+    {
+      escreveArvB(noSelecionado->filhos[i]);
+      printf("%d ", noSelecionado->chaves[i + 1]);
+    }
+
+    escreveArvB(noSelecionado->filhos[i]);
+  }
+}
+
+void escreveNoCompleto(NoArvB *no)
+{
+  int i;
+  for (i = 0; i < no->nregs; i++)
+    printf("%d ", no->chaves[i + 1]);
+}
+
+int getTamanhoArvB(ArvB *root)
+{
+  int esq, dir;
+
+  if (!root)
+    return -1;
+
+  esq = getTamanhoArvB(root->filhos[0]) + 1;
+  dir = getTamanhoArvB(root->filhos[root->nregs]) + 1;
+
+  return esq > dir ? esq : dir;
+}
+
+void escreveNivelArvB(NoArvB *root, int nivel)
+{
+  if (!root)
+    return;
+
+  if (nivel == 1)
+    escreveNoCompleto(root);
+  else if (nivel > 1)
+  {
+    escreveNivelArvB(root->filhos[0], nivel - 1);
+    escreveNivelArvB(root->filhos[root->nregs], nivel - 1);
+  }
+}
+
+void escreveArvBPorNivel(ArvB *root)
+{
+  int height;
+  int i;
+  for (i = 1; i <= height; i++)
+    escreveNivelArvB(root, i);
 }
 
 int setNo(int item, int *pval, ArvB *no, ArvB **filho)
@@ -305,8 +356,8 @@ int setNo(int item, int *pval, ArvB *no, ArvB **filho)
     for (pos = no->nregs; (item < no->chaves[pos] && pos > 1); pos--)
       ;
 
-    if (item == no->chaves[pos]) // Valor duplicado
-      return 0;
+    if (item == no->chaves[pos])
+      return -2;
   }
 
   if (setNo(item, pval, no->filhos[pos], filho))
@@ -314,9 +365,10 @@ int setNo(int item, int *pval, ArvB *no, ArvB **filho)
     if (no->nregs < MAX)
       InserirValor(*pval, pos, no, *filho);
     else
+    {
       divideNo(*pval, pval, pos, no, *filho, filho);
-
-    return 1;
+      return 1;
+    }
   }
 
   return 0;
@@ -328,19 +380,19 @@ void inserir(int item)
   ArvB *filho;
 
   flag = setNo(item, &i, raiz, &filho);
-  if (flag < 0)
+  if (flag && flag != -2)
     raiz = criarNo(i, filho);
 
-  if (flag != 0)
-    printf("\n--> Valor inserido com sucesso!\n\n");
-  else
+  if (flag == -2)
     printf("\n!--> Não permite valor duplicado!\n\n");
+  else
+    printf("\n--> Valor inserido com sucesso!\n\n");
 }
 
 void clearBuf()
 {
   int c;
-  while (((c = getchar()) == '\n' || c == EOF))
+  while (((c = getchar()) == '\n' && c == EOF))
     ;
 }
 
@@ -356,6 +408,7 @@ int main()
       printf("\n(1) Inserir na Árvore-B");
       printf("\n(2) Buscar na Árvore-B");
       printf("\n(3) Remover Chave na Árvore-B");
+      printf("\n(4) Mostrar Árvore-B");
       printf("\n(0) Encerrar");
 
       printf("\n\n--> Insira a opção desejada: ");
@@ -364,9 +417,9 @@ int main()
       if (!r)
         clearBuf();
 
-      if (!r || op < 0 || op > 3)
+      if (!r || op < 0 || op > 4)
         printf("\n!--> Insira uma opção válida!\n\n");
-    } while (!r || op < 0 || op > 3);
+    } while (!r || op < 0 || op > 4);
 
     switch (op)
     {
@@ -414,6 +467,17 @@ int main()
       else
         printf("\n--> A chave não foi encontrada e logo não foi removida!\n\n");
 
+      break;
+
+    case 4:
+      if (!raiz)
+        printf("\n--> Árvore vazia!\n\n");
+      else
+      {
+        printf("\n====> Árvore-B (Ordenada h-%d)\n\n", getTamanhoArvB(raiz));
+        escreveArvB(raiz);
+        printf("\n\n");
+      }
       break;
 
     case 0:
