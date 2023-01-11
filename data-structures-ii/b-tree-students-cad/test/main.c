@@ -13,9 +13,11 @@ const int MAX_KEYS = TREE_ORDER - 1;
 const int MIN_KEYS = MIN_NODES - 1;
 const int MAX_RA_DIGITS = 9;
 const int MAX_RRN_DIGITS = 4;
+const int INDEX_START = strlen(ROOT_KEY_VALUE) + MAX_RRN_DIGITS + 2; // Size of jump at beginning of file
 const int SIZE_OF_BTREE_PAGE_RECORD = (MAX_RRN_DIGITS + MAX_RA_DIGITS) * MAX_KEYS + TREE_ORDER * MAX_RRN_DIGITS;
 
 int ROOT_RRN;
+int CURRENT_RRN;
 
 typedef struct index
 {
@@ -109,33 +111,57 @@ void printHeader(const char *text)
 
 Page *createPage()
 {
-  Page *newPage = (Page *)calloc(1, sizeof(Page));
+  int i;
+  Page *newPage = (Page *)malloc(sizeof(Page));
   if (!newPage)
   {
     printError("Erro ao alocar memória para a página!");
     exit(1);
   }
+
+  for (i = 0; i < TREE_ORDER; i++)
+    newPage->children[i] = -1;
+
+  for (i = 0; i < MAX_KEYS; i++)
+    newPage->keys[i].raUnesp = newPage->keys[i].pos = -1;
+
   return newPage;
 }
 
 Page *retrievePage(FILE *btree, const int pageRrn)
 {
-  const int indexStart = strlen(ROOT_KEY_VALUE) + MAX_RRN_DIGITS + 2; // Size of jump at beginning of file
   int i;
   char aux[MAX_RA_DIGITS + MAX_RRN_DIGITS + 1], ra[MAX_RA_DIGITS + 1], rrn[MAX_RRN_DIGITS + 1];
   Page *page = createPage();
 
-  fseek(btree, indexStart + pageRrn * SIZE_OF_BTREE_PAGE_RECORD, SEEK_SET);
-  for (i = 0; i < TREE_ORDER + MAX_KEYS; i++)
+  fseek(btree, INDEX_START + pageRrn * SIZE_OF_BTREE_PAGE_RECORD, SEEK_SET);
+  for (i = 0; i < TREE_ORDER; i++)
   {
-    if (!fgets(aux, MAX_RRN_DIGITS + (i % 2 ? MAX_RA_DIGITS : 0) + 1, btree))
+    // Read children
+    if (!fgets(aux, MAX_RRN_DIGITS + 1, btree))
     {
       printError("Erro ao ler dados do índice!");
       exit(1);
     }
 
-    if (i % 2)
+    if (!(aux[0] == '?'))
     {
+      strncpy(rrn, aux, MAX_RRN_DIGITS); // Capture RRN
+      rrn[MAX_RRN_DIGITS] = '\0';
+      page->children[i] = atoi(rrn);
+    }
+    else
+      page->children[i] = -1;
+
+    if (i < MAX_KEYS)
+    {
+      // Read key pair (ra + rrn)
+      if (!fgets(aux, MAX_RRN_DIGITS + MAX_RA_DIGITS + 1, btree))
+      {
+        printError("Erro ao ler dados do índice!");
+        exit(1);
+      }
+
       if (!(aux[0] == '?'))
       { // Há chave
         page->keysCount++;
@@ -147,24 +173,33 @@ Page *retrievePage(FILE *btree, const int pageRrn)
         page->keys[i].pos = atoi(rrn);
       }
       else
-      {
+      { // Não há chave
         page->keys[i].raUnesp = -1;
         page->keys[i].pos = -1;
       }
     }
-    else
-    {
-      if (!aux[0] == '?')
-      {
-        strncpy(rrn, aux, MAX_RRN_DIGITS); // Capture RRN
-        rrn[MAX_RRN_DIGITS] = '\0';
-        page->children[i] = atoi(rrn);
-      }
-      else
-        page->children[i] = NULL;
-    }
   }
   return page;
+}
+
+void writePageOnFile(FILE *btree, Page *page, const int pageRrn)
+{
+  const char aux[MAX_STRING_SIZE] = {'?'};
+  int i;
+
+  fseek(btree, INDEX_START + pageRrn * SIZE_OF_BTREE_PAGE_RECORD, SEEK_SET);
+  for (i = 0; i < TREE_ORDER; i++)
+  {
+    if (page->children[i] >= 0)
+      fprintf(btree, "%04d", page->children[i]);
+    else
+      fprintf(btree, "%.4s", aux);
+
+    if (i < page->keysCount && page->keys[i].raUnesp >= 0)
+      fprintf(btree, "%09d%04d", page->keys[i].raUnesp, page->keys[i].pos);
+    else if (i < MAX_KEYS)
+      fprintf(btree, "%.9s%.4s", aux, aux);
+  }
 }
 
 void searchRa()
@@ -252,20 +287,18 @@ void showMenu()
 void printPageOnScreen(Page *page)
 {
   int i;
-  for (i = 0; i < MAX_KEYS + TREE_ORDER; i++)
+  for (i = 0; i < TREE_ORDER; i++)
   {
-    if (i % 2)
+    printf("%04d|", page->children[i]);
+    if (i < page->keysCount)
       printf("%09d,%04d|", page->keys[i].raUnesp, page->keys[i].pos);
-    else
-      printf("%04d|", !page->children[i] ? -1 : page->children[i]);
+    else if (i < MAX_KEYS)
+      printf("%09d,%04d|", -1, -1);
   }
   printf("\n");
 }
 
 int main()
 {
-  FILE *btree = openBTreeIndex(BTREE_FILENAME);
-  Page *page = retrievePage(btree, 1);
-  printPageOnScreen(page);
   return 0;
 }
