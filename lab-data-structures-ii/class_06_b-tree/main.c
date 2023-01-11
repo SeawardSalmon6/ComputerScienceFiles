@@ -1,8 +1,12 @@
+/* Author: Jean Rayhan Vieira Achour */
+
 #include <stdio.h>
 #include <stdlib.h>
 
-#define MAX 2
-#define MIN 1
+#define TREE_ORDER 3
+#define MAX TREE_ORDER - 1
+#define MIN_NODES (TREE_ORDER / 2 + (TREE_ORDER / 2.0 - TREE_ORDER / 2 > 0 ? 1 : 0))
+#define MIN MIN_NODES - 1
 
 typedef struct no
 {
@@ -25,7 +29,7 @@ No *criarNo(int item, No *filho)
   return novoNo;
 }
 
-void InserirValor(int item, int pos, No *no, No *filho)
+void inserirValor(int item, int pos, No *no, No *filho)
 {
   int j = no->count;
   while (j > pos)
@@ -59,13 +63,69 @@ void divideNo(int item, int *pval, int pos, No *no, No *filho, No **novoNo)
   (*novoNo)->count = MAX - mediana;
 
   if (pos <= MIN)
-    InserirValor(item, pos, no, filho);
+    inserirValor(item, pos, no, filho);
   else
-    InserirValor(item, pos - mediana, *novoNo, filho);
+    inserirValor(item, pos - mediana, *novoNo, filho);
 
   *pval = no->item[no->count];
   (*novoNo)->link[0] = no->link[no->count];
   no->count--;
+}
+
+int setNo(int item, int *pval, No *no, No **filho)
+{
+  int pos, ret;
+  if (!no)
+  {
+    *pval = item;
+    *filho = NULL;
+    return 1;
+  }
+
+  // Procurar posição de inserção
+  if (item < no->item[1])
+    pos = 0; // Se o item for maior que a primeira chave, faz a marcação
+  else
+  { // Quando o item é inserido no meio do vetor
+    pos = no->count;
+    while (pos > 1 && item < no->item[pos])
+      pos--;
+
+    if (item == no->item[pos]) // Valor duplicado
+      return -1;
+  }
+
+  ret = setNo(item, pval, no->link[pos], filho);
+  if (ret == -1) // Verifica se o valor foi duplicado nas recursões posteriores
+    return -1;
+
+  if (ret)
+  {
+    if (no->count < MAX) // Se servir no nó, insere ali mesmo
+      inserirValor(*pval, pos, no, *filho);
+    else
+    {
+      divideNo(*pval, pval, pos, no, *filho, filho);
+      return 1;
+    }
+  }
+
+  return 0;
+}
+
+void inserir(int item)
+{
+  int flag, valRaiz;
+  No *filho;
+
+  flag = setNo(item, &valRaiz, raiz, &filho);
+  if (flag && flag != -1)
+    raiz = criarNo(valRaiz, filho);
+
+  if (flag != -1)
+    printf("\n--> Valor inserido com sucesso!\n\n");
+  else
+    printf("\n!--> Não permite valor duplicado!\n\n");
 }
 
 void escreveArvB(No *noSelecionado)
@@ -104,70 +164,16 @@ int procura(No *noSelecionado, int val)
   return 0;
 }
 
-int setNo(int item, int *pval, No *no, No **filho)
-{
-  int pos, ret;
-  if (!no)
-  {
-    *pval = item;
-    *filho = NULL;
-    return -1;
-  }
-
-  if (item < no->item[1])
-    pos = 0;
-  else
-  {
-    for (pos = no->count; (item < no->item[pos] && pos > 1); pos--)
-      ;
-
-    if (item == no->item[pos]) // Valor duplicado
-      return -2;
-  }
-
-  ret = setNo(item, pval, no->link[pos], filho);
-  if (ret == -2)
-    return -2;
-  else if (ret)
-  {
-    if (no->count < MAX)
-      InserirValor(*pval, pos, no, *filho);
-    else
-    {
-      divideNo(*pval, pval, pos, no, *filho, filho);
-      return 1;
-    }
-  }
-
-  return 0;
-}
-
-void inserir(int item)
-{
-  int flag, i;
-  No *filho;
-
-  flag = setNo(item, &i, raiz, &filho);
-  if (flag && flag != -2)
-    raiz = criarNo(i, filho);
-
-  if (flag != -2)
-    printf("\n--> Valor inserido com sucesso!\n\n");
-  else
-    printf("\n!--> Não permite valor duplicado!\n\n");
-}
-
 int getTamanhoArvB(No *root)
 {
-  int esq, dir;
+  int height;
 
   if (!root)
     return -1;
 
-  esq = getTamanhoArvB(root->link[0]) + 1;
-  dir = getTamanhoArvB(root->link[root->count]) + 1;
+  height = getTamanhoArvB(root->link[0]) + 1;
 
-  return esq > dir ? esq : dir;
+  return height;
 }
 
 void escreveNoCompleto(No *no)
@@ -194,6 +200,9 @@ void escreveArvBPorNivel(No *root)
 {
   int height = getTamanhoArvB(root);
   int i;
+
+  printf("\n====> Árvore-B (Ordenada)\n");
+  printf("\n--> Altura: %02d\n\n\n", height);
   for (i = 0; i <= height; i++)
   {
     if (i == 0)
@@ -203,6 +212,8 @@ void escreveArvBPorNivel(No *root)
 
     escreveNivelArvB(root, i);
   }
+
+  printf("\n\n");
 }
 
 void clearBuf()
@@ -272,11 +283,7 @@ int main()
       if (!raiz)
         printf("\n--> Árvore vazia!\n\n");
       else
-      {
-        printf("\n====> Árvore-B (Ordenada h-%d)\n\n", getTamanhoArvB(raiz));
         escreveArvBPorNivel(raiz);
-        printf("\n\n");
-      }
 
       break;
 

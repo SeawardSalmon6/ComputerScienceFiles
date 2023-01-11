@@ -13,8 +13,8 @@ typedef struct no
 {
   int ordem;
   int nregs;
-  int chaves[MAX + 1];
-  struct no *filhos[MAX + 1];
+  int chaves[ORDER + 1];
+  struct no *filhos[ORDER + 1];
 } ArvB, NoArvB;
 
 ArvB *raiz;
@@ -96,12 +96,12 @@ direita. A filha à esquerda da chave que subiu passa a ser filha à direita daq
 
 BOOL NoComMaisChavesQuePossivel(NoArvB *no)
 {
-  return (no->nregs > MAX);
+  return (no->nregs > ORDER);
 }
 
 BOOL NoComMenosChavesQuePermitido(NoArvB *no)
 {
-  return (no->nregs < MIN);
+  return (no->nregs < MIN_KEYS);
 }
 
 BOOL BuscaChaveNoArvB(NoArvB *no, int chave, int *pos)
@@ -238,10 +238,10 @@ void divideNo(int item, int *pval, int pos, ArvB *no, ArvB *filho, ArvB **novoNo
   int mediana, j;
 
   *novoNo = (ArvB *)malloc(sizeof(ArvB));
-  mediana = pos > MIN ? MIN + 1 : MIN;
+  mediana = pos > MIN_KEYS ? MIN_KEYS + 1 : MIN_KEYS;
 
   j = mediana + 1;
-  while (j <= MAX)
+  while (j <= ORDER)
   {
     (*novoNo)->chaves[j - mediana] = no->chaves[j];
     (*novoNo)->filhos[j - mediana] = no->filhos[j];
@@ -249,9 +249,9 @@ void divideNo(int item, int *pval, int pos, ArvB *no, ArvB *filho, ArvB **novoNo
   }
 
   no->nregs = mediana;
-  (*novoNo)->nregs = MAX - mediana;
+  (*novoNo)->nregs = ORDER - mediana;
 
-  if (pos <= MIN)
+  if (pos <= MIN_KEYS)
     InserirValor(item, pos, no, filho);
   else
     InserirValor(item, pos - mediana, *novoNo, filho);
@@ -362,7 +362,7 @@ int setNo(int item, int *pval, ArvB *no, ArvB **filho)
 
   if (setNo(item, pval, no->filhos[pos], filho))
   {
-    if (no->nregs < MAX)
+    if (no->nregs < ORDER)
       InserirValor(*pval, pos, no, *filho);
     else
     {
