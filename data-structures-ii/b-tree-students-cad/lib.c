@@ -1,279 +1,574 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <math.h>
+#include <string.h>
 #include "lib.h"
 
-// Helpers
-void clearTerminalEOF()
+int ROOT_RRN;
+int CURRENT_RRN;
+
+void clearEOF()
 {
   char c;
   while ((c = getchar()) != '\n' && c != EOF)
     ;
 }
 
-void fillRecord(FILE *dataFile, Aluno record)
+void printError(const char *text)
 {
+  printf("\n\n!--> Erro: %s\n", text);
+}
+
+void printWarning(const char *text)
+{
+  printf("\n\n!--> %s\n\n", text);
+}
+
+FILE *openFile(const char *filename, const char *mode)
+{
+  FILE *fp = fopen(filename, mode);
+  if (!fp)
+  {
+    if (mode && mode[0] == 'r')
+      return NULL;
+
+    printError("Erro ao abrir o arquivo!\n");
+    exit(1);
+  }
+  return fp;
+}
+
+void readString(char *str, const size_t maxLength)
+{
+  fgets(str, maxLength, stdin);
+  str[strcspn(str, "\n")] = '\0';
+
+  if (strnlen(str, maxLength) >= maxLength)
+    clearEOF();
+}
+
+int getRootRRN(FILE *btree)
+{
+  int r, rrn;
+  char aux[256] = {0};
+  fseek(btree, 0, SEEK_SET); // Points to beginning of file
+  if (fscanf(btree, "%[^=]=%d\n", aux, &rrn) <= 0)
+    rrn = -1;
+  return rrn;
+}
+
+FILE *openBTreeIndex(const char *filename)
+{
+  FILE *fp = openFile(filename, "r+");
+  if (!fp)
+  {                                               // If the file doesn't exist
+    fp = openFile(filename, "w+");                // Create a file
+    fprintf(fp, "%s=%04d\n", ROOT_KEY_VALUE, -1); // Set ROOT_RRN to 0
+    ROOT_RRN = -1;
+  }
+  else
+    ROOT_RRN = getRootRRN(fp);
+
+  fseek(fp, 0, SEEK_END);
+  CURRENT_RRN = (ftell(fp) - INDEX_START) / SIZE_OF_BTREE_PAGE_RECORD - 1;
+
+  return fp;
+}
+
+void printHeader(const char *text)
+{
+  printf("\n\n======== %s\n", text);
+}
+
+Page *createPage()
+{
+  int i;
+  Page *newPage = (Page *)malloc(sizeof(Page));
+  if (!newPage)
+  {
+    printError("Erro ao alocar memória para a página!");
+    exit(1);
+  }
+
+  // Setting standard variables
+  newPage->keysCount = 0;
+
+  for (i = 0; i < TREE_ORDER; i++)
+    newPage->children[i] = -1;
+
+  for (i = 0; i < MAX_KEYS; i++)
+    newPage->keys[i].raUnesp = newPage->keys[i].pos = -1;
+
+  return newPage;
+}
+
+Page *retrievePage(FILE *btree, const int pageRrn)
+{
+  int i;
+  char aux[MAX_RA_DIGITS + MAX_RRN_DIGITS + 1], ra[MAX_RA_DIGITS + 1], rrn[MAX_RRN_DIGITS + 1];
+  Page *page;
+
+  if (ROOT_RRN < 0 || pageRrn < 0) // If the tree is empty or the page RRN is invalid
+    return NULL;
+
+  page = createPage();
+  fseek(btree, INDEX_START + pageRrn * SIZE_OF_BTREE_PAGE_RECORD, SEEK_SET);
+  for (i = 0; i < TREE_ORDER; i++)
+  {
+    // Read children
+    if (!fgets(aux, MAX_RRN_DIGITS + 1, btree))
+    {
+      printError("Erro ao ler dados do índice!");
+      exit(1);
+    }
+
+    if (!(aux[0] == '?'))
+    {
+      strncpy(rrn, aux, MAX_RRN_DIGITS); // Capture RRN
+      rrn[MAX_RRN_DIGITS] = '\0';
+      page->children[i] = atoi(rrn);
+    }
+    else
+      page->children[i] = -1;
+
+    if (i < MAX_KEYS)
+    {
+      // Read key pair (ra + rrn)
+      if (!fgets(aux, MAX_RRN_DIGITS + MAX_RA_DIGITS + 1, btree))
+      {
+        printError("Erro ao ler dados do índice!");
+        exit(1);
+      }
+
+      if (!(aux[0] == '?'))
+      { // Há chave
+        page->keysCount++;
+        strncpy(ra, aux, MAX_RA_DIGITS); // Capture RA
+        ra[MAX_RA_DIGITS] = '\0';
+        strncpy(rrn, aux + MAX_RA_DIGITS, MAX_RRN_DIGITS); // Capture RRN
+        rrn[MAX_RRN_DIGITS] = '\0';
+        page->keys[i].raUnesp = atoi(ra);
+        page->keys[i].pos = atoi(rrn);
+      }
+      else
+      { // Não há chave
+        page->keys[i].raUnesp = -1;
+        page->keys[i].pos = -1;
+      }
+    }
+  }
+  return page;
+}
+
+void writePageOnFile(FILE *btree, Page *page, const int pageRrn)
+{
+  const char *aux = "?????????";
+  int i;
+
+  fseek(btree, INDEX_START + pageRrn * SIZE_OF_BTREE_PAGE_RECORD, SEEK_SET);
+  for (i = 0; i < TREE_ORDER; i++)
+  {
+    if (page->children[i] >= 0)
+      fprintf(btree, "%04d", page->children[i]);
+    else
+      fprintf(btree, "%.4s", aux);
+
+    if (i < page->keysCount && page->keys[i].raUnesp >= 0)
+      fprintf(btree, "%09d%04d", page->keys[i].raUnesp, page->keys[i].pos);
+    else if (i < MAX_KEYS)
+      fprintf(btree, "%.9s%.4s", aux, aux);
+  }
+}
+
+int findRaInBtree(FILE *btree, const int rrn, const int ra, int *foundRrn, int *keyPosition)
+{
+  int i;
+  Page *page = retrievePage(btree, rrn);
+
+  if (!page)
+  {
+    free(page);
+    page = NULL;
+    return !FOUND;
+  }
+
+  i = 0;
+  while (i < page->keysCount && page->keys[i].raUnesp < ra)
+    i++;
+
+  if (page->keys[i].raUnesp == ra)
+  { // Key found
+    *foundRrn = rrn;
+    *keyPosition = i;
+    free(page);
+    page = NULL;
+    return FOUND;
+  }
+
+  return findRaInBtree(btree, page->children[i], ra, foundRrn, keyPosition);
+}
+
+IndexNode *searchRa(const int ra)
+{
+  int found, foundRrn, keyPosition;
+  Page *page;
+  FILE *btree = openBTreeIndex(BTREE_FILENAME);
+
+  if (ROOT_RRN < 0) // If the three is empty, return NULL
+    return NULL;
+
+  found = findRaInBtree(btree, ROOT_RRN, ra, &foundRrn, &keyPosition);
+  if (!found)
+    return NULL;
+
+  page = retrievePage(btree, foundRrn);
+  fclose(btree);
+
+  return &page->keys[keyPosition];
+}
+
+int isRaInRange(const int ra)
+{
+  return ra >= 0 && ra < 1000000000;
+}
+
+int isRaValid(const int ra)
+{
+  IndexNode *key = searchRa(ra);
+  if (isRaInRange(ra))
+  {
+    if (key)
+      return -1; // Key duplicated
+    return 1;    // Key is valid
+  }
+  return 0; // Key is not in range
+}
+
+void insertKeyInPage(const IndexNode key, const int rightChild, const int pos, Page *page)
+{
+  int i = pos;
+  while (i < page->keysCount)
+  {
+    page->keys[i + 1] = page->keys[i];
+    page->children[i + 1 + 1] = page->children[i + 1];
+    i++;
+  }
+
+  page->keysCount++;
+  page->keys[pos] = key;
+  page->children[pos + 1] = rightChild;
+}
+
+void split(const IndexNode promoKey, const int rightChild, const int pos, Page *page, IndexNode *refPromoKey, int *refRightChild, Page **newPage)
+{
+  IndexNode keys[MAX_KEYS + 1];
+  int i, children[TREE_ORDER + 1];
+  int median = (MAX_KEYS + 1) / 2;
+
+  // Copy values from page.keys to the auxililary vector
+  for (i = 0; i < page->keysCount; i++)
+  {
+    keys[i] = page->keys[i];
+    children[i] = page->children[i];
+  }
+  children[i] = page->children[i]; // Copy last children
+
+  // Inserts promoKey at the correct position
+  for (i = pos; i < page->keysCount; i++)
+  {
+    keys[i + 1] = keys[i];
+    children[i + 1 + 1] = children[i + 1];
+  }
+
+  keys[pos] = promoKey;
+  children[pos + 1] = rightChild;
+
+  // Create newpage
+  *newPage = createPage();
+  CURRENT_RRN++; // Updates the RRN
+
+  *refPromoKey = keys[median];
+  *refRightChild = CURRENT_RRN;
+
+  for (i = median - 1; i >= 0; i--)
+  {
+    page->keys[i] = keys[i];
+    page->children[i] = children[i];
+  }
+  page->children[median] = children[median];
+
+  // Clears copied values to newpage
+  for (i = median; i < page->keysCount; i++)
+  {
+    page->keys[i].raUnesp = page->keys[i].pos = -1;
+    page->children[i + 1] = -1;
+  }
+
+  for (i = median + 1; i <= page->keysCount; i++)
+  {
+    (*newPage)->keys[i - (median + 1)] = keys[i];
+    (*newPage)->children[i - (median + 1)] = children[i];
+  }
+  (*newPage)->children[i - (median + 1)] = children[i];
+
+  page->keysCount = median;
+  (*newPage)->keysCount = MAX_KEYS - median;
+}
+
+int insertKey(FILE *btree, const int pageRrn, const IndexNode key, IndexNode *promoKey, int *rightChild)
+{
+  int pos, returnValue;
+  Page *page, *newPage;
+
+  if (pageRrn < 0)
+  {
+    *promoKey = key;
+    *rightChild = -1;
+    return PROMOTION;
+  }
+
+  page = retrievePage(btree, pageRrn);
+
+  pos = 0;
+  while (pos < page->keysCount && page->keys[pos].raUnesp < key.raUnesp)
+    pos++;
+
+  if (page->keys[pos].raUnesp == key.raUnesp)
+  {
+    printError("Chave duplicada!");
+    return ERROR; // Duplicated key
+  }
+
+  returnValue = insertKey(btree, page->children[pos], key, promoKey, rightChild);
+  if (returnValue == NO_PROMOTION || returnValue == ERROR)
+    return returnValue;
+
+  // Checks if page can contain the new key
+  if (page->keysCount < MAX_KEYS)
+  { // Key can be inserted into page
+    insertKeyInPage(*promoKey, *rightChild, pos, page);
+    writePageOnFile(btree, page, pageRrn);
+    return NO_PROMOTION;
+  }
+
+  // Realizes split and promotion logic
+  split(*promoKey, *rightChild, pos, page, promoKey, rightChild, &newPage);
+  writePageOnFile(btree, page, pageRrn);
+  writePageOnFile(btree, newPage, CURRENT_RRN);
+
+  free(page);
+  page = NULL;
+  free(newPage);
+  newPage = NULL;
+
+  return PROMOTION;
+}
+
+void updateRoot(FILE *btree, const IndexNode promoKey, const int rightChild)
+{
+  Page *newRoot = createPage();
+
+  newRoot->keysCount = 1;
+  newRoot->keys[0] = promoKey;
+  newRoot->children[0] = ROOT_RRN;
+  newRoot->children[1] = rightChild;
+
+  CURRENT_RRN++;
+  fseek(btree, 0, SEEK_SET);                                // Position W/R head at the header
+  fprintf(btree, "%s=%04d\n", ROOT_KEY_VALUE, CURRENT_RRN); // Updates header
+  ROOT_RRN = CURRENT_RRN;                                   // Updates the new ROOT_RRN value
+
+  writePageOnFile(btree, newRoot, CURRENT_RRN);
+
+  free(newRoot);
+  newRoot = NULL;
+}
+
+void insertIntoBtree(IndexNode node)
+{
+  int rightChild;
+  IndexNode promoKey;
+  FILE *btree = openBTreeIndex(BTREE_FILENAME);
+
+  if (insertKey(btree, ROOT_RRN, node, &promoKey, &rightChild) == PROMOTION)
+    updateRoot(btree, promoKey, rightChild);
+
+  fclose(btree);
+}
+
+void fillRecord(FILE *dataFile, Student record)
+{
+  int i;
   int nDigits = (int)(log10(abs(record.raUnesp))) + 1;
   int nameSize = strnlen(record.name, MAX_STRING_SIZE);
   int courseSize = strnlen(record.course, MAX_STRING_SIZE);
-  int i;
+
+  fprintf(dataFile, "%d;%s;%s;", record.raUnesp, record.name, record.course);
 
   for (i = 0; i < RECORD_SIZE - (nDigits + nameSize + courseSize + 3); i++)
     fprintf(dataFile, "%c", FILL_RECORD_CHARACTER);
 }
 
-BTreeNode *createNode(IndexNode info, BTreeNode *child)
+void insertIntoDatafile(FILE *dataFile, Student student, IndexNode *node)
 {
-  BTreeNode *newNode = (BTreeNode *)malloc(sizeof(BTreeNode));
-  if (!newNode)
-  {
-    printf("\n\n!--> Erro ao alocar memória!\n");
-    exit(EXIT_FAILURE);
-  }
+  int pos;
 
-  newNode->count = 1;
-  newNode->keys[1] = info;
-  newNode->children[0] = root;
-  newNode->children[1] = child;
-  return newNode;
+  // Position W/R head to the end of file
+  fseek(dataFile, 0, SEEK_END);
+
+  node->raUnesp = student.raUnesp;
+  node->pos = ftell(dataFile);
+  fillRecord(dataFile, student);
 }
 
-// Index File Access
-BTreeNode *getIndexListFromFile(FILE *ind, BTreeNode **lastIndexNode)
+void readStudent()
 {
-  IndexNode aux;
-  char key[256];
+  int r, raValid, ra;
+  Student newStudent;
+  IndexNode newNode;
+  FILE *dataFile = openFile(DATA_FILENAME, "a+");
 
-  ind = fopen(INDEX_FILENAME, "r");
-  if (!ind)
+  printHeader("CADASTRAR NOVO ALUNO");
+  printf("\n--> Digite o nome do aluno: ");
+  readString(newStudent.name, MAX_STRING_SIZE);
+
+  printf("\n--> Digite o nome do curso: ");
+  readString(newStudent.course, MAX_STRING_SIZE);
+
+  do
   {
-    *lastIndexNode = NULL;
-    return NULL;
-  }
+    printf("\n--> Digite o RA do aluno: ");
+    r = scanf(" %d", &ra);
 
-  // If there is an error in the index file, set count to 0
-  if (fscanf(ind, "%[^=]=%d\n", key, &recordsCount) <= 0 || strcmp(key, ROOT_ID_KEY) != 0)
-  {
-    recordsCount = 0;
-    fclose(ind);
-    *lastIndexNode = NULL;
-    return NULL;
-  }
+    clearEOF();
 
-  // Capture the root item
-  fscanf(ind, "%d;%ld\n", &aux.raUnesp, &aux.pos);
-  root = createNode(aux);
-  last = root;
+    raValid = isRaValid(ra);
+    if (r && raValid < 0)
+      printWarning("O RA inserido já existe na base de dados!");
+    else if (!r || !raValid)
+      printWarning("Insira uma valor válido!");
+  } while (!r || raValid <= 0);
 
-  for (int i = 1; i < recordsCount; i++)
-  {
-    fscanf(ind, "%d;%ld\n", &aux.raUnesp, &aux.pos);
-    newNode = createNode(aux);
-    last->prox = newNode;
-    last = newNode;
-  }
+  newStudent.raUnesp = ra;
 
-  fclose(ind);
-  *lastIndexNode = last;
-  return root;
+  // Insert into Datafile
+  insertIntoDatafile(dataFile, newStudent, &newNode);
+
+  // Insert into BTree
+  insertIntoBtree(newNode);
+
+  printf("\n\n--> Aluno inserido com sucesso!\n");
+
+  fclose(dataFile);
 }
 
-void setIndexesBackup(FILE *ind, BTreeNode *indexList)
+void printStudent(const int pos)
 {
-  BTreeNode *aux;
+  char *token, record[RECORD_SIZE + 1];
+  FILE *dataFile = openFile(DATA_FILENAME, "r");
 
-  ind = fopen(INDEX_FILENAME, "w");
-  if (!ind)
-  {
-    printf("\n--> Erro ao abrir o arquivo!\n\n");
-    exit(EXIT_FAILURE);
-  }
-
-  fprintf(ind, "%s=%d\n", ROOT_ID_KEY, recordsCount);
-  aux = indexList;
-  while (aux)
-  {
-    fprintf(ind, "%d;%d\n", aux->info.raUnesp, aux->info.pos);
-    aux = aux->prox;
-  }
-
-  fclose(ind);
-}
-
-// Program Functions
-void showMenu(FILE *dataFile)
-{
-  int r, op;
-
-  dataFile = fopen(LIST_FILENAME, "a+");
   if (!dataFile)
   {
-    printf("\n--> Erro ao abrir o arquivo!\n\n");
-    exit(EXIT_FAILURE);
+    printError("O arquivo especificado não existe!");
+    exit(1);
   }
+
+  fseek(dataFile, pos, SEEK_SET);
+  if (fgets(record, RECORD_SIZE + 1, dataFile) != NULL)
+  {
+    token = strtok(record, FIELDS_DELIMETER);
+
+    printf("\n--> RA do Aluno: %d", atoi(token));
+    token = strtok(NULL, FIELDS_DELIMETER);
+
+    printf("\n--> Nome do Aluno: %s", token);
+    token = strtok(NULL, FIELDS_DELIMETER);
+
+    printf("\n--> Curso: %s", token);
+    printf("\n");
+  }
+  else
+  {
+    printError("Erro ao ler os dados do aluno!");
+    exit(-1);
+  }
+}
+
+void searchStudent()
+{
+  int r, ra;
+  IndexNode *node;
+
+  printHeader("BUSCAR ALUNO");
+
+  if (ROOT_RRN < 0)
+  { // The tree is empty
+    printWarning("A lista de alunos está vazia!");
+    return;
+  }
+
+  do
+  {
+    printf("\n\n--> Digite o RA do aluno: ");
+    r = scanf(" %d", &ra);
+
+    clearEOF();
+
+    if (!r)
+      printWarning("Insira uma valor válido!");
+  } while (!r);
+
+  if (!isRaInRange(ra))
+  {
+    printWarning("Aluno não encontrado!");
+    return;
+  }
+
+  node = searchRa(ra);
+  if (!node)
+    printWarning("Aluno não encontrado!");
+  else
+    printStudent(node->pos);
+}
+
+void showMenu()
+{
+  int r, op;
 
   do
   {
     do
     {
-      printf("\n===== MENU");
-      printf("\n(1) Gravar Aluno");
+      printHeader("MENU PRINCIPAL");
+      printf("\n(1) Inserir Aluno");
       printf("\n(2) Buscar Aluno");
-      printf("\n(0) Sair");
+      printf("\n(0) Encerrar");
 
-      printf("\n\n--> Digite a opção escolhida: ");
+      printf("\n\n--> Digite uma opção: ");
       r = scanf(" %d", &op);
 
-      clearTerminalEOF();
+      clearEOF();
 
       if (!r || op < 0 || op > 2)
-        printf("\n\n!--> Insira uma opção válida!\n");
+        printWarning("Insira uma opção válida!");
     } while (!r || op < 0 || op > 2);
 
     switch (op)
     {
     case 1:
-      readStudent(dataFile, indexList, lastIndexNode);
+      readStudent();
       break;
+
     case 2:
-      fclose(dataFile);
-      findStudent(dataFile, indexList);
+      searchStudent();
       break;
+
     case 0:
-      printf("\n--> Obrigado por utilizar nossa aplicação!\n\n");
+      printWarning("Obrigado por utilizar nossa aplicação! :)");
+      break;
+
+    default:
       break;
     }
   } while (op != 0);
-
-  fclose(dataFile);
-}
-
-int isRaValid(int ra, BTreeNode *indexList)
-{
-  BTreeNode *aux = indexList;
-  while (aux)
-  {
-    if (aux->info.raUnesp == ra)
-    {
-      printf("\n\n!--> Este RA já existe, insira um RA válido!\n");
-      return 0; // If found, return false
-    }
-    aux = aux->prox;
-  }
-
-  if (ra <= 0 || ra > 999999999)
-  {
-    printf("\n\n!--> Insira um valor entre 1 e 999.999.999!\n");
-    return 0;
-  }
-
-  return 1;
-}
-
-void readStudent(FILE *dataFile, BTreeNode **indexList, BTreeNode **lastIndexNode)
-{
-  BTreeNode *newNode;
-  IndexNode indexAux;
-  Aluno aux;
-  int r;
-
-  fseek(dataFile, 0, SEEK_END);
-  indexAux.pos = ftell(dataFile);
-
-  printf("\n======= GRAVAR ALUNO\n");
-
-  printf("\n-> Insira o nome: ");
-  fgets(aux.name, MAX_STRING_SIZE, stdin);
-  aux.name[strcspn(aux.name, "\n")] = '\0';
-
-  clearTerminalEOF();
-
-  printf("\n-> Insira o nome do curso: ");
-  fgets(aux.course, MAX_STRING_SIZE, stdin);
-  aux.course[strcspn(aux.course, "\n")] = '\0';
-
-  do
-  {
-    clearTerminalEOF();
-
-    printf("\n-> Insira o RA UNESP: ");
-    r = scanf(" %d", &aux.raUnesp);
-
-    if (!r)
-      printf("\n\n!--> Insira um valor válido!\n");
-  } while (!(r && isRaValid(aux.raUnesp, *indexList)));
-
-  fprintf(dataFile, "%d;%s;%s;", aux.raUnesp, aux.name, aux.course);
-  fillRecord(dataFile, aux);
-
-  indexAux.raUnesp = aux.raUnesp;
-  newNode = createNode(indexAux);
-
-  if (!*indexList)
-    *indexList = newNode;
-  else
-    (*lastIndexNode)->prox = newNode;
-
-  *lastIndexNode = newNode;
-  recordsCount++;
-}
-
-void findStudent(FILE *dataFile, BTreeNode **indexList)
-{
-  int r, ra, found = 0;
-  char *token, line[RECORD_SIZE];
-  BTreeNode *aux;
-
-  dataFile = fopen(LIST_FILENAME, "a+");
-  if (!dataFile)
-  {
-    printf("\n--> Erro ao abrir o arquivo!\n\n");
-    exit(EXIT_FAILURE);
-  }
-
-  do
-  {
-    printf("\n-> Insira o RA UNESP: ");
-    r = scanf(" %d", &ra);
-
-    clearTerminalEOF();
-
-    if (!r)
-      printf("\n\n!--> Insira um valor válido!\n");
-  } while (!r);
-
-  aux = *indexList;
-  while (aux && !found)
-  {
-    if (aux->info.raUnesp == ra)
-    {
-      fseek(dataFile, aux->info.pos, SEEK_SET);
-      if (fgets(line, RECORD_SIZE + 1, dataFile) != NULL)
-      {
-        token = strtok(line, FIELDS_DELIMETER);
-
-        printf("\n--> RA do Aluno: %d", atoi(token));
-        token = strtok(NULL, FIELDS_DELIMETER);
-
-        printf("\n--> Nome do Aluno: %s", token);
-        token = strtok(NULL, FIELDS_DELIMETER);
-
-        printf("\n--> Curso: %s", token);
-        printf("\n");
-
-        found = 1;
-      }
-      else
-      {
-        printf("\n\n!--> Erro ao ler os dados do aluno!\n");
-        exit(EXIT_FAILURE);
-      }
-    }
-    else
-      aux = aux->prox;
-  }
-
-  if (!found)
-    printf("\n!--> O aluno especificado não foi encontrado!\n");
 }
