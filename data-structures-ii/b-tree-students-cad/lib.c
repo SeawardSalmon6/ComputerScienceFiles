@@ -63,7 +63,7 @@ FILE *openBTreeIndex(const char *filename)
   if (!fp)
   {                                               // If the file doesn't exist
     fp = openFile(filename, "w+");                // Create a file
-    fprintf(fp, "%s=%04d\n", ROOT_KEY_VALUE, -1); // Set ROOT_RRN to 0
+    fprintf(fp, "%s=%04d\n", ROOT_KEY_VALUE, -1); // Set ROOT_RRN to -1
     ROOT_RRN = -1;
   }
   else
@@ -108,7 +108,7 @@ Page *retrievePage(FILE *btree, const int pageRrn)
   char aux[MAX_RA_DIGITS + MAX_RRN_DIGITS + 1], ra[MAX_RA_DIGITS + 1], rrn[MAX_RRN_DIGITS + 1];
   Page *page;
 
-  if (ROOT_RRN < 0 || pageRrn < 0) // If the tree is empty or the page RRN is invalid
+  if (ROOT_RRN < 0 || pageRrn < 0 || pageRrn > CURRENT_RRN) // If the tree is empty or the page RRN is invalid
     return NULL;
 
   page = createPage();
@@ -122,7 +122,7 @@ Page *retrievePage(FILE *btree, const int pageRrn)
       exit(1);
     }
 
-    if (!(aux[0] == '?'))
+    if (aux[0] != '?')
     {
       strncpy(rrn, aux, MAX_RRN_DIGITS); // Capture RRN
       rrn[MAX_RRN_DIGITS] = '\0';
@@ -140,7 +140,7 @@ Page *retrievePage(FILE *btree, const int pageRrn)
         exit(1);
       }
 
-      if (!(aux[0] == '?'))
+      if (aux[0] != '?')
       { // Há chave
         page->keysCount++;
         strncpy(ra, aux, MAX_RA_DIGITS); // Capture RA
@@ -180,9 +180,9 @@ void writePageOnFile(FILE *btree, Page *page, const int pageRrn)
   }
 }
 
-int findRaInBtree(FILE *btree, const int rrn, const int ra, int *foundRrn, int *keyPosition)
+int findRaInBtree(FILE *btree, const int rrn, const int ra, int *foundRrn, int *keyPosition, int *seeks)
 {
-  int i;
+  int pos;
   Page *page = retrievePage(btree, rrn);
 
   if (!page)
@@ -192,39 +192,50 @@ int findRaInBtree(FILE *btree, const int rrn, const int ra, int *foundRrn, int *
     return !FOUND;
   }
 
-  i = 0;
-  while (i < page->keysCount && page->keys[i].raUnesp < ra)
-    i++;
+  if (seeks)
+    *seeks = *seeks + 1; // Seeks counter
 
-  if (page->keys[i].raUnesp == ra)
+  pos = 0;
+  while (pos < page->keysCount && page->keys[pos].raUnesp < ra)
+    pos++;
+
+  if (pos < MAX_KEYS && page->keys[pos].raUnesp == ra)
   { // Key found
     *foundRrn = rrn;
-    *keyPosition = i;
+    *keyPosition = pos;
+
     free(page);
     page = NULL;
+
     return FOUND;
   }
 
-  return findRaInBtree(btree, page->children[i], ra, foundRrn, keyPosition);
+  return findRaInBtree(btree, page->children[pos], ra, foundRrn, keyPosition, seeks);
 }
 
-IndexNode *searchRa(const int ra)
+IndexNode *searchRa(const int ra, int *seeks)
 {
   int found, foundRrn, keyPosition;
+  IndexNode *foundNode;
   Page *page;
   FILE *btree = openBTreeIndex(BTREE_FILENAME);
 
   if (ROOT_RRN < 0) // If the three is empty, return NULL
     return NULL;
 
-  found = findRaInBtree(btree, ROOT_RRN, ra, &foundRrn, &keyPosition);
+  found = findRaInBtree(btree, ROOT_RRN, ra, &foundRrn, &keyPosition, seeks);
   if (!found)
     return NULL;
 
   page = retrievePage(btree, foundRrn);
   fclose(btree);
 
-  return &page->keys[keyPosition];
+  foundNode = &page->keys[keyPosition];
+
+  free(page);
+  page = NULL;
+
+  return foundNode;
 }
 
 int isRaInRange(const int ra)
@@ -234,9 +245,10 @@ int isRaInRange(const int ra)
 
 int isRaValid(const int ra)
 {
-  IndexNode *key = searchRa(ra);
+  IndexNode *key;
   if (isRaInRange(ra))
   {
+    key = searchRa(ra, NULL);
     if (key)
       return -1; // Key duplicated
     return 1;    // Key is valid
@@ -261,9 +273,9 @@ void insertKeyInPage(const IndexNode key, const int rightChild, const int pos, P
 
 void split(const IndexNode promoKey, const int rightChild, const int pos, Page *page, IndexNode *refPromoKey, int *refRightChild, Page **newPage)
 {
+  const int median = (MAX_KEYS + 1) / 2;
   IndexNode keys[MAX_KEYS + 1];
   int i, children[TREE_ORDER + 1];
-  int median = (MAX_KEYS + 1) / 2;
 
   // Copy values from page.keys to the auxililary vector
   for (i = 0; i < page->keysCount; i++)
@@ -274,10 +286,10 @@ void split(const IndexNode promoKey, const int rightChild, const int pos, Page *
   children[i] = page->children[i]; // Copy last children
 
   // Inserts promoKey at the correct position
-  for (i = pos; i < page->keysCount; i++)
+  for (i = page->keysCount; i > pos; i--)
   {
-    keys[i + 1] = keys[i];
-    children[i + 1 + 1] = children[i + 1];
+    keys[i] = keys[i - 1];
+    children[i + 1] = children[i];
   }
 
   keys[pos] = promoKey;
@@ -290,6 +302,7 @@ void split(const IndexNode promoKey, const int rightChild, const int pos, Page *
   *refPromoKey = keys[median];
   *refRightChild = CURRENT_RRN;
 
+  // Copy values from page.keys that are less than median
   for (i = median - 1; i >= 0; i--)
   {
     page->keys[i] = keys[i];
@@ -304,6 +317,7 @@ void split(const IndexNode promoKey, const int rightChild, const int pos, Page *
     page->children[i + 1] = -1;
   }
 
+  // Copy values from page.keys that are bigger than median
   for (i = median + 1; i <= page->keysCount; i++)
   {
     (*newPage)->keys[i - (median + 1)] = keys[i];
@@ -333,7 +347,7 @@ int insertKey(FILE *btree, const int pageRrn, const IndexNode key, IndexNode *pr
   while (pos < page->keysCount && page->keys[pos].raUnesp < key.raUnesp)
     pos++;
 
-  if (page->keys[pos].raUnesp == key.raUnesp)
+  if (pos < MAX_KEYS && page->keys[pos].raUnesp == key.raUnesp)
   {
     printError("Chave duplicada!");
     return ERROR; // Duplicated key
@@ -341,13 +355,20 @@ int insertKey(FILE *btree, const int pageRrn, const IndexNode key, IndexNode *pr
 
   returnValue = insertKey(btree, page->children[pos], key, promoKey, rightChild);
   if (returnValue == NO_PROMOTION || returnValue == ERROR)
+  {
+    free(page);
+    page = NULL;
     return returnValue;
+  }
 
   // Checks if page can contain the new key
   if (page->keysCount < MAX_KEYS)
   { // Key can be inserted into page
     insertKeyInPage(*promoKey, *rightChild, pos, page);
     writePageOnFile(btree, page, pageRrn);
+
+    free(page);
+    page = NULL;
     return NO_PROMOTION;
   }
 
@@ -360,7 +381,6 @@ int insertKey(FILE *btree, const int pageRrn, const IndexNode key, IndexNode *pr
   page = NULL;
   free(newPage);
   newPage = NULL;
-
   return PROMOTION;
 }
 
@@ -411,8 +431,6 @@ void fillRecord(FILE *dataFile, Student record)
 
 void insertIntoDatafile(FILE *dataFile, Student student, IndexNode *node)
 {
-  int pos;
-
   // Position W/R head to the end of file
   fseek(dataFile, 0, SEEK_END);
 
@@ -447,19 +465,18 @@ void readStudent()
       printWarning("O RA inserido já existe na base de dados!");
     else if (!r || !raValid)
       printWarning("Insira uma valor válido!");
-  } while (!r || raValid <= 0);
+  } while (!r || raValid != 1);
 
   newStudent.raUnesp = ra;
 
   // Insert into Datafile
   insertIntoDatafile(dataFile, newStudent, &newNode);
+  fclose(dataFile);
 
   // Insert into BTree
   insertIntoBtree(newNode);
 
   printf("\n\n--> Aluno inserido com sucesso!\n");
-
-  fclose(dataFile);
 }
 
 void printStudent(const int pos)
@@ -474,7 +491,7 @@ void printStudent(const int pos)
   }
 
   fseek(dataFile, pos, SEEK_SET);
-  if (fgets(record, RECORD_SIZE + 1, dataFile) != NULL)
+  if (fgets(record, RECORD_SIZE + 1, dataFile))
   {
     token = strtok(record, FIELDS_DELIMETER);
 
@@ -484,8 +501,7 @@ void printStudent(const int pos)
     printf("\n--> Nome do Aluno: %s", token);
     token = strtok(NULL, FIELDS_DELIMETER);
 
-    printf("\n--> Curso: %s", token);
-    printf("\n");
+    printf("\n--> Curso: %s\n", token);
   }
   else
   {
@@ -496,7 +512,7 @@ void printStudent(const int pos)
 
 void searchStudent()
 {
-  int r, ra;
+  int r, ra, seeks = 0;
   IndexNode *node;
 
   printHeader("BUSCAR ALUNO");
@@ -524,7 +540,9 @@ void searchStudent()
     return;
   }
 
-  node = searchRa(ra);
+  node = searchRa(ra, &seeks);
+  printf("\n\n*** Quantidade de Seeks necessários: %d\n", seeks);
+
   if (!node)
     printWarning("Aluno não encontrado!");
   else
