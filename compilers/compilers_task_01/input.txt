@@ -1,0 +1,44 @@
+"something"
+-83
+2+2
+2 + 2 * 3
+299
+false
+199.2
+true
+int something = 120;
+const boolean something = false;
+float something = 120;
+string something = "hello";
+other
++
+-
+*
+/
+if
+else
+int
+boolean
+int something = 23
+int something = "something";
+float something = "hello";
+id something =
+string something = 2;
+
+// That's my comment
+/* That's my comment */
+
+2__var
+var
+my_variable
+variable_name01002
+
+var = 2;
+var = 3
+
+==
+<=
+,
+.
+23,3
+'hello'

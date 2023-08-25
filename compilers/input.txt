@@ -1,0 +1,12 @@
+"something"
+-83
+2 + 2 * 3
+199.2
+int something = 120;
+const boolean something = false;
++
+float something = "hello";
+// That's my comment
+2__var
+mY_var
+variable_name01002

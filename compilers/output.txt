@@ -1,0 +1,31 @@
+
+String: something
+Integer: -83
+Math Operation: 2 + 2 * 3
+Float: 199.200000
+
+You're declaring an Integer Variable:
+  -> something = 120
+
+
+You're declaring a Constant Boolean Variable:
+  -> something = false
+
+Math Operator: +
+
+!-> ERROR at line 8
+  - Type error: the provided value it's not a (float) value: float something = "hello";
+
+This is a comment: // That's my comment
+
+!-> ERROR at line 10
+  - Identifier names should not have numbers as first character: 2__var
+
+Variable Identifier: mY_var
+Variable Identifier: variable_name01002
+
+------------------- END OF FILE -------------------
+
+--> O compilador encontrou 2 erros
+--> O arquivo de entrada possui 12 linhas
+
