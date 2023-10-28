@@ -1,7 +1,13 @@
 #include <stdio.h>
 
-int main() {
-  int 1___something2 = 2;
+int main(int argc, char *argv[]) {
+  argc--;
+  argv++;
+
+  printf("%d \n", argc);
+
+  for (int i = 0; i < argc; i++)
+    printf("- %s\n", argv[i]);
 
   return 0;
 }

@@ -9,22 +9,18 @@ FLEX_TEST_SOURCE=test.lex
 MAIN_INPUT_FILE=input.txt
 TEST_FILE=test.txt
 
-lexic_main:
+make_main:
 	$(FLEX_CC) $(FLEX_MAIN_SOURCE)
+	$(CC) -o main $(MAIN_SOURCE) $(CFLAGS)
 
-lexic_test:
+make_test:
 	$(FLEX_CC) $(FLEX_TEST_SOURCE)
-
-run_main: lexic_main
 	$(CC) -o main $(MAIN_SOURCE) $(CFLAGS)
 
-main_test: lexic_test
-	$(CC) -o main $(MAIN_SOURCE) $(CFLAGS)
-
-main: run_main
+main: make_main
 	clear
 	./main < $(MAIN_INPUT_FILE)
 
-test: main_test
+test: make_test
 	clear
 	./main < $(TEST_FILE)

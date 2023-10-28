@@ -18,7 +18,7 @@ MATH_OPERATORS          [+\-*/%]
 NEWLINE                 \n
 INSTRUCTION_SEPARATOR   ";"
 ATTRIBUTION_SYMBOLS     {ATTRIBUTION_SYMBOL}|"+="|"-="|"*="|"/="|"%="
-COMPARISON_SYMBOLS      "=="|"<="|">="|"<"|">"
+COMPARISON_SYMBOLS      "=="|"<="|">="|"<"|">"|"!="
 PONTUATION_SYMBOLS      "("|")"|"{"|"}"|","|"["|"]"
 OL_COMMENTS_EXPRESSION  "//"[^\n]*
 ML_COMMENTS_EXPRESSION  "/*"[^\n]*"*/"
@@ -200,7 +200,28 @@ RESERVED_WORDS          {INTEGER_KEYWORD}|{FLOAT_KEYWORD}|{STRING_KEYWORD}|{BOOL
 
 %%
 
-int main() {
+int main(int argc, char *argv[]) {
+  FILE *fp = NULL;
+
+  argc--; argv++;
+  if (argc == 1) {
+    fp = fopen(argv[0], "r");
+
+    if (!fp) {
+      printf("\n\n!--> Error: could not open the specified file. Use: ./main <filename>\n\n");
+      exit(1);
+    }
+
+    yyin = fp;
+  } else if (argc > 1) {
+    if (!fp) {
+      printf("\n\n!--> Error: too much arguments. Use: ./main <filename>\n\n");
+      exit(1);
+    }
+  } else {
+    yyin = stdin;
+  }
+
   yylex();
 
   printf("\n\n------------------- END OF FILE -------------------\n");
@@ -302,4 +323,3 @@ void print_declaration(char *declaration, const char *type) {
     printf("\n\nUnknown Variable Declaration!\n");
   }
 }
-
