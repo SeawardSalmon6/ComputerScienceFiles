@@ -1,15 +1,13 @@
 import { Button } from "@rneui/themed";
 import { Alert } from "react-native";
 
-const confirmUserDeletion = ({ user, setUsers }) => {
+const confirmUserDeletion = ({ user, usersDispatcher }) => {
   Alert.alert("Excluir Usuário", "Deseja realmente excluir o usuário?", [
     {
       text: "Sim",
       onPress: () => {
         console.warn(`Usuário *${user.name}* excluído!`);
-        setUsers((prev) =>
-          prev.filter((currentUser) => currentUser.id !== user.id)
-        );
+        usersDispatcher({ type: "delete", user });
       },
     },
     {
@@ -18,7 +16,7 @@ const confirmUserDeletion = ({ user, setUsers }) => {
   ]);
 };
 
-export const getUserActions = ({ user, setUsers, navigation }) => {
+export const getUserActions = ({ user, usersDispatcher, navigation }) => {
   return (
     <>
       <Button
@@ -27,7 +25,7 @@ export const getUserActions = ({ user, setUsers, navigation }) => {
         icon={{ name: "edit", size: 25, color: "orange" }}
       />
       <Button
-        onPress={() => confirmUserDeletion({ user, setUsers })}
+        onPress={() => confirmUserDeletion({ user, usersDispatcher })}
         type="clear"
         icon={{ name: "delete", size: 25, color: "red" }}
       />

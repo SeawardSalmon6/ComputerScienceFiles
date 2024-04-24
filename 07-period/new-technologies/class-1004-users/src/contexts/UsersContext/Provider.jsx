@@ -1,19 +1,21 @@
-import { createContext, useMemo, useState } from "react";
+import { createContext, useMemo, useReducer } from "react";
 import { getRandomUsers } from "../../constants/users";
+import { usersReducer } from "./constants";
 
 export const UsersContext = createContext({
   users: [],
+  usersDispatcher: () => {},
 });
 
 export function UsersProvider({ children }) {
-  const [users, setUsers] = useState(getRandomUsers(30));
+  const [users, usersDispatcher] = useReducer(usersReducer, 30, getRandomUsers);
 
   const value = useMemo(
     () => ({
       users,
-      setUsers,
+      usersDispatcher,
     }),
-    [users]
+    [users, usersDispatcher]
   );
 
   return (

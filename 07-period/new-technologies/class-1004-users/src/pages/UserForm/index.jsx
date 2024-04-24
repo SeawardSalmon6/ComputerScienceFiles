@@ -9,30 +9,37 @@ export function UserForm() {
   const route = useRoute();
   const navigation = useNavigation();
   const [user, setUser] = useState(route.params?.user ?? {});
-  const { setUsers } = useUsersContext();
+  const { usersDispatcher } = useUsersContext();
+
+  const getOnChange = (key) => {
+    return (value) => {
+      setUser((prev) => ({
+        ...prev,
+        [key]: value,
+      }));
+    };
+  };
 
   return (
     <View style={styles.form}>
       <Text>Nome</Text>
       <TextInput
         style={styles.input}
-        onChangeText={(name) => setUser((prev) => ({ ...prev, name }))}
+        onChangeText={getOnChange("name")}
         placeholder="Insira o nome do usuário"
         value={user.name}
       />
       <Text>E-mail</Text>
       <TextInput
         style={styles.input}
-        onChangeText={(email) => setUser((prev) => ({ ...prev, email }))}
+        onChangeText={getOnChange("email")}
         placeholder="Insira o e-mail do usuário"
         value={user.email}
       />
       <Text>Avatar URL</Text>
       <TextInput
         style={styles.input}
-        onChangeText={(avatarUrl) =>
-          setUser((prev) => ({ ...prev, avatarUrl }))
-        }
+        onChangeText={getOnChange("avatarUrl")}
         placeholder="Insira o link do avatar do usuário"
         value={user.avatarUrl}
       />
@@ -40,21 +47,9 @@ export function UserForm() {
         title="Salvar"
         onPress={() => {
           if (user.id) {
-            setUsers((prev) =>
-              prev.map((currentUser) =>
-                currentUser.id === user.id
-                  ? { ...currentUser, ...user }
-                  : currentUser
-              )
-            );
+            usersDispatcher({ type: "update", user });
           } else {
-            setUsers((prev) => [
-              ...prev,
-              {
-                id: Math.max(...prev.map((u) => u.id)) + 1,
-                ...user,
-              },
-            ]);
+            usersDispatcher({ type: "create", user });
           }
 
           navigation.goBack();

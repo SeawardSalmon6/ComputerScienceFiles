@@ -7,7 +7,7 @@ import { styles } from "./styles";
 import { useUsersContext } from "../../contexts/UsersContext/useUsersContext";
 
 export function UsersList() {
-  const { users, setUsers } = useUsersContext();
+  const { users, usersDispatcher } = useUsersContext();
   const navigation = useNavigation();
 
   const renderItem = ({ item: user }) => {
@@ -18,7 +18,7 @@ export function UsersList() {
           <ListItem.Title>{user.name}</ListItem.Title>
           <ListItem.Subtitle>{user.email}</ListItem.Subtitle>
         </ListItem.Content>
-        {getUserActions({ user, setUsers, navigation })}
+        {getUserActions({ user, usersDispatcher, navigation })}
       </ListItem>
     );
   };
