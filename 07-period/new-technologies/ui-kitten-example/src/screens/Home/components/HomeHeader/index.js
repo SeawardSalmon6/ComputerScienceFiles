@@ -1,5 +1,5 @@
 import { Avatar, Icon, Text, TopNavigationAction } from "@ui-kitten/components";
-import { AppLayout } from "../../../components/AppLayout";
+import { AppLayout } from "../../../../components/AppLayout";
 import { View } from "react-native";
 import { useState } from "react";
 import { styles } from "./styles";
@@ -11,7 +11,7 @@ export function HomeHeader() {
     <AppLayout.Header
       accessoryLeft={
         <Avatar
-          source={require("../../../../assets/avatar.png")}
+          source={require("../../../../../assets/avatar.png")}
           style={styles.avatar}
         />
       }

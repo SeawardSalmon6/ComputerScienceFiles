@@ -3,12 +3,12 @@ import { AppLayout } from "../../components/AppLayout";
 import { APP_ROUTES } from "../../routes/app.routes";
 import { useAppNavigation } from "../../hooks/useAppNavigation";
 
-export function DetailsScreen() {
+export function FavoritesScreen() {
   const { getGoTo } = useAppNavigation();
 
   return (
     <AppLayout.Base
-      header={<AppLayout.Header title="Details" backTo={null} />}
+      header={<AppLayout.Header title="Favorites" backTo={null} />}
       contentStyle={{
         flex: 1,
         justifyContent: "center",

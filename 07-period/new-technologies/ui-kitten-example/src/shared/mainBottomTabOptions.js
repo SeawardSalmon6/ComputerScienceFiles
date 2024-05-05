@@ -10,6 +10,6 @@ export const MAIN_BOTTOM_TAB_OPTIONS = [
   {
     key: "heart",
     icon: <Icon name="heart-outline" />,
-    screenName: APP_ROUTES.DETAILS,
+    screenName: APP_ROUTES.FAVORITES,
   },
 ];
