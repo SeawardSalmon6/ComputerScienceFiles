@@ -3,16 +3,16 @@
 #include <string.h>
 #include "huffman.h"
 
-void getFilename(char *textFilename, char *hufFilename, char *uncompressedFilename)
-{
+void getFilename(char *textFilename, char *hufFilename, char *uncompressedFilename) {
   char *filename, *extension, aux[SIZE];
-  FILE *fp;
 
   printf("\n--> Insira o nome do arquivo (com extensão) a ser compactado: ");
   fgets(aux, SIZE, stdin);
   aux[strcspn(aux, "\n")] = '\0';
 
-  fp = openFile(aux, "r");
+  if (!openFile(aux, "r")) {
+    exit(1);
+  }
 
   filename = strtok(aux, ".");
   extension = strtok(NULL, ".");
@@ -22,8 +22,7 @@ void getFilename(char *textFilename, char *hufFilename, char *uncompressedFilena
   sprintf(uncompressedFilename, "%s%s%s%s", filename, HUF_OUT_SUFFIX, extension ? "." : "", extension ? extension : "");
 }
 
-unsigned char *readTextFile(const char *filename, unsigned long *filesize)
-{
+unsigned char *readTextFile(const char *filename, unsigned long *filesize) {
   unsigned char *text;
   unsigned long size;
   FILE *fp = openFile(filename, "rb");
@@ -33,15 +32,13 @@ unsigned char *readTextFile(const char *filename, unsigned long *filesize)
   *filesize = size;
 
   text = (unsigned char *)calloc(size + 1, sizeof(unsigned char));
-  if (!text)
-  {
+  if (!text) {
     printf("\n!--> Erro ao alocar memória para a string!\n\n");
     exit(1);
   }
 
   rewind(fp);
-  if (fread(text, size, 1, fp) != 1)
-  {
+  if (fread(text, size, 1, fp) != 1) {
     printf("\n!--> Erro ao ler o arquivo!\n\n");
     exit(1);
   }
@@ -51,19 +48,16 @@ unsigned char *readTextFile(const char *filename, unsigned long *filesize)
   return text;
 }
 
-void createFrequencyTable(unsigned long *table, const unsigned char *text, const unsigned long filesize)
-{
-  int i = 0;
+void createFrequencyTable(unsigned long *table, const unsigned char *text, const unsigned long filesize) {
+  unsigned long i = 0;
   while (i < filesize)
     table[text[i++]]++;
 }
 
-Node *createNode(const unsigned char c, const unsigned long f)
-{
+Node *createNode(const unsigned char c, const unsigned long f) {
   Node *newNode = (Node *)malloc(sizeof(Node));
 
-  if (!newNode)
-  {
+  if (!newNode) {
     printf("\n!--> Erro ao alocar memória para o nó!\n\n");
     exit(1);
   }
@@ -76,15 +70,13 @@ Node *createNode(const unsigned char c, const unsigned long f)
   return newNode;
 }
 
-Node *insertInOrder(Node *root, Node *newNode)
-{
+Node *insertInOrder(Node *root, Node *newNode) {
   Node *aux;
 
   if (!root)
     return newNode;
 
-  if (newNode->f < root->f)
-  {
+  if (newNode->f < root->f) {
     newNode->next = root;
     return newNode;
   }
@@ -98,14 +90,12 @@ Node *insertInOrder(Node *root, Node *newNode)
   return root;
 }
 
-int mountList(Node **root, const unsigned long *table)
-{
+int mountList(Node **root, const unsigned long *table) {
   int i, count = 0;
   Node *newNode;
 
   for (i = 0; i < SIZE; i++)
-    if (table[i] > 0)
-    {
+    if (table[i] > 0) {
       count++;
       newNode = createNode(i, table[i]);
       *root = insertInOrder(*root, newNode);
@@ -114,8 +104,7 @@ int mountList(Node **root, const unsigned long *table)
   return count;
 }
 
-Node *extractFirstNode(Node **root)
-{
+Node *extractFirstNode(Node **root) {
   Node *fn = *root;
 
   if (!fn)
@@ -126,12 +115,10 @@ Node *extractFirstNode(Node **root)
   return fn;
 }
 
-Node *generateHuffmanTree(Node *root)
-{
+Node *generateHuffmanTree(Node *root) {
   Node *n1, *n2, *p;
 
-  while (root->next)
-  {
+  while (root->next) {
     n1 = extractFirstNode(&root);
     n2 = extractFirstNode(&root);
     p = createNode(PARENT_NODE_CHARACTER, n1->f + n2->f);
@@ -143,8 +130,7 @@ Node *generateHuffmanTree(Node *root)
   return root;
 }
 
-int getTreeHeight(const Node *root)
-{
+int getTreeHeight(const Node *root) {
   int right = 0;
   int left = 0;
 
@@ -156,23 +142,19 @@ int getTreeHeight(const Node *root)
   return left > right ? left : right;
 }
 
-char **allocateDictionary(const int height)
-{
+char **allocateDictionary(const int height) {
   int i;
   char **dictionary;
 
   dictionary = (char **)malloc(SIZE * sizeof(char *));
-  if (!dictionary)
-  {
+  if (!dictionary) {
     printf("\n!--> Erro ao alocar memória para o dicionário!\n\n");
     exit(1);
   }
 
-  for (i = 0; i < SIZE; i++)
-  {
+  for (i = 0; i < SIZE; i++) {
     dictionary[i] = (char *)calloc(height + 1, sizeof(char));
-    if (!dictionary[i])
-    {
+    if (!dictionary[i]) {
       printf("\n!--> Erro ao alocar memória para um pedaço do dicionário!\n\n");
       exit(1);
     }
@@ -181,20 +163,15 @@ char **allocateDictionary(const int height)
   return dictionary;
 }
 
-int isLeaf(const Node *node)
-{
+int isLeaf(const Node *node) {
   return !node->left && !node->right;
 }
 
-void createDictionary(char **dictionary, const Node *root, char *binary, int i)
-{
-  if (isLeaf(root))
-  {
+void createDictionary(char **dictionary, const Node *root, char *binary, int i) {
+  if (isLeaf(root)) {
     binary[i] = '\0';
     memcpy(dictionary[root->c], binary, i);
-  }
-  else
-  {
+  } else {
     binary[i] = '0';
     createDictionary(dictionary, root->left, binary, i + 1);
     binary[i] = '1';
@@ -202,8 +179,7 @@ void createDictionary(char **dictionary, const Node *root, char *binary, int i)
   }
 }
 
-void writeHuffmanFileHeader(const char *filename, Node *root, const int lettersCount)
-{
+void writeHuffmanFileHeader(const char *filename, Node *root, const int lettersCount) {
   Node *aux;
   FILE *fp = openFile(filename, "w");
 
@@ -211,8 +187,7 @@ void writeHuffmanFileHeader(const char *filename, Node *root, const int lettersC
   fprintf(fp, "%d\n", lettersCount);
 
   aux = root;
-  while (aux)
-  {
+  while (aux) {
     fprintf(fp, "%c %ld\n", aux->c, aux->f);
     aux = aux->next;
   }
@@ -220,15 +195,13 @@ void writeHuffmanFileHeader(const char *filename, Node *root, const int lettersC
   fclose(fp);
 }
 
-unsigned char convertByteToChar(const char *code)
-{
+unsigned char convertByteToChar(const char *code) {
   int i, j;
   unsigned char byte = 0;
 
   i = 0;
   j = 7;
-  while (j >= 0 && code[i] != '\0')
-  {
+  while (j >= 0 && code[i] != '\0') {
     if (code[i] == '1')
       byte |= (1 << j);
     j--;
@@ -238,11 +211,10 @@ unsigned char convertByteToChar(const char *code)
   return byte;
 }
 
-char *slice(char *str, const unsigned int start, const unsigned int end)
-{
-  const int len = strlen(str);
+char *slice(char *str, const unsigned int start, const unsigned int end) {
+  const unsigned int len = strlen(str);
 
-  if (!str || start < 0 || end > len || start > end)
+  if (!str || end > len || start > end)
     return NULL;
 
   memcpy(str, str + start, end - start);
@@ -250,21 +222,17 @@ char *slice(char *str, const unsigned int start, const unsigned int end)
   return str;
 }
 
-char *concat(char *dest, const char *src, const unsigned int size)
-{
+char *concat(char *dest, const char *src, const unsigned int size) {
   const unsigned int lend = strlen(dest);
   const unsigned int lens = strlen(src);
 
-  if (!dest || !src || size < 0)
+  if (!dest || !src || size == 0)
     return NULL;
 
-  if (lend + lens < size)
-  {
+  if (lend + lens < size) {
     memcpy(dest + lend, src, lens);
     *(dest + lens + lend) = '\0';
-  }
-  else
-  {
+  } else {
     printf("\n!--> A string de destino é muito pequena para a concatenação!\n\n");
     exit(1);
   }
@@ -272,29 +240,25 @@ char *concat(char *dest, const char *src, const unsigned int size)
   return dest;
 }
 
-void writeHuffmanEncoding(const unsigned char *text, const unsigned long filesize, char **dictionary, const int height, const char *filename)
-{
-  const int maxLength = height * 128 + 1;
+void writeHuffmanEncoding(const unsigned char *text, const unsigned long filesize, char **dictionary, const int height, const char *filename) {
+  const int maxLength = height * 256 + 1;
   char *codedText;
-  int len, i, j;
+  unsigned long len, i, j;
   long characters, sizeCompact;
   FILE *fp = openFile(filename, "a");
 
   codedText = (char *)calloc(maxLength, sizeof(char));
-  if (!codedText)
-  {
+  if (!codedText) {
     printf("\n!--> Erro ao alocar memória para a string!\n\n");
     exit(1);
   }
 
   i = j = 0;
-  while (i < filesize)
-  {
+  while (i < filesize) {
     concat(codedText, dictionary[text[i]], maxLength);
     len = strlen(codedText);
 
-    if (len >= BITS_IN_A_BYTE)
-    {
+    if (len >= BITS_IN_A_BYTE) {
       fprintf(fp, "%c", convertByteToChar(codedText));
       slice(codedText, BITS_IN_A_BYTE, len);
       len -= BITS_IN_A_BYTE;
@@ -305,8 +269,7 @@ void writeHuffmanEncoding(const unsigned char *text, const unsigned long filesiz
   }
 
   characters = j * BITS_IN_A_BYTE;
-  if (len > 0)
-  {
+  if (len > 0) {
     characters += len;
     fprintf(fp, "%c", convertByteToChar(codedText));
   }
@@ -323,18 +286,14 @@ void writeHuffmanEncoding(const unsigned char *text, const unsigned long filesiz
   fclose(fp);
 }
 
-void freeTree(Node **root)
-{
+void freeTree(Node **root) {
   if (!(*root))
     return;
 
-  if (isLeaf(*root))
-  {
+  if (isLeaf(*root)) {
     free(*root);
     *root = NULL;
-  }
-  else
-  {
+  } else {
     freeTree(&(*root)->left);
     freeTree(&(*root)->right);
     free(*root);
@@ -342,12 +301,10 @@ void freeTree(Node **root)
   }
 }
 
-void convertCharToByte(unsigned char c, char *code)
-{
+void convertCharToByte(unsigned char c, char *code) {
   int i = 7;
 
-  while (i >= 0)
-  {
+  while (i >= 0) {
     code[i] = (c & 1) + '0';
     c >>= 1;
     i--;
@@ -356,9 +313,8 @@ void convertCharToByte(unsigned char c, char *code)
   code[BITS_IN_A_BYTE] = '\0';
 }
 
-Node *readHuffmanFile(Node *root, const char *hufFilename, const char *uncompressedFilename)
-{
-  int i, j, k, letters;
+Node *readHuffmanFile(Node *root, const char *hufFilename, const char *uncompressedFilename) {
+  unsigned long i, j, k, letters;
   char code[9], line[SIZE];
   unsigned char c, *text;
   unsigned long f, pos, end, bitsCounter;
@@ -369,8 +325,7 @@ Node *readHuffmanFile(Node *root, const char *hufFilename, const char *uncompres
   fgets(line, SIZE, huf); // Reads version
   line[strcspn(line, "\n")] = '\0';
 
-  if (strcasecmp(line, HUFFMAN_VERSION) != 0)
-  {
+  if (strcasecmp(line, HUFFMAN_VERSION) != 0) {
     printf("\n!--> As versão do arquivo não é suportada!\n\n");
     exit(1);
   }
@@ -379,8 +334,7 @@ Node *readHuffmanFile(Node *root, const char *hufFilename, const char *uncompres
   letters = atoi(line);
 
   // Reads the table
-  for (i = 0; i < letters; i++)
-  {
+  for (i = 0; i < letters; i++) {
     c = fgetc(huf);         // Reads first char
     fgets(line, SIZE, huf); // Reads the frequency
     f = atol(line);
@@ -405,26 +359,22 @@ Node *readHuffmanFile(Node *root, const char *hufFilename, const char *uncompres
   fseek(huf, pos, SEEK_SET);
 
   text = (unsigned char *)calloc((end - pos) + 1, sizeof(unsigned char));
-  if (!text)
-  {
+  if (!text) {
     printf("\n!--> Erro ao alocar memória para a string!\n\n");
     exit(1);
   }
 
-  if (fread(text, (end - pos), 1, huf) != 1)
-  {
+  if (fread(text, (end - pos), 1, huf) != 1) {
     printf("\n!--> Houve um erro ao ler o texto compactado!\n\n");
     exit(1);
   }
 
   i = k = 0;
   aux = root;
-  while (i < (end - pos))
-  {
+  while (i < (end - pos)) {
     convertCharToByte(text[i], code);
 
-    for (j = 0; j < BITS_IN_A_BYTE; j++)
-    {
+    for (j = 0; j < BITS_IN_A_BYTE; j++) {
       if (bitsCounter == 0)
         break;
 
@@ -434,8 +384,7 @@ Node *readHuffmanFile(Node *root, const char *hufFilename, const char *uncompres
       else
         aux = aux->left;
 
-      if (isLeaf(aux))
-      {
+      if (isLeaf(aux)) {
         fprintf(out, "%c", aux->c);
         bitsCounter -= k;
         aux = root;
@@ -453,8 +402,7 @@ Node *readHuffmanFile(Node *root, const char *hufFilename, const char *uncompres
   return root;
 }
 
-void clearMemory(Node **root, unsigned char **text, char **binary, unsigned long **freqTable, char ***dictionary)
-{
+void clearMemory(Node **root, unsigned char **text, char **binary, unsigned long **freqTable, char ***dictionary) {
   int i;
   freeTree(root);
 
@@ -465,8 +413,7 @@ void clearMemory(Node **root, unsigned char **text, char **binary, unsigned long
   free(*binary);
   *binary = NULL;
 
-  for (i = 0; i < SIZE; i++)
-  {
+  for (i = 0; i < SIZE; i++) {
     free((*dictionary)[i]);
     (*dictionary)[i] = NULL;
   }
@@ -475,12 +422,10 @@ void clearMemory(Node **root, unsigned char **text, char **binary, unsigned long
   *dictionary = NULL;
 }
 
-FILE *openFile(const char *filename, const char *mode)
-{
+FILE *openFile(const char *filename, const char *mode) {
   FILE *fp = fopen(filename, mode);
 
-  if (!fp)
-  {
+  if (!fp) {
     printf("\n!--> Erro ao abrir o arquivo \"%s\"!\n\n", filename);
     exit(1);
   }
@@ -488,13 +433,11 @@ FILE *openFile(const char *filename, const char *mode)
   return fp;
 }
 
-void showMenu(int *op)
-{
+void showMenu(int *op) {
   int resScan = 0;
   char c;
 
-  do
-  {
+  do {
     printf("\n===== ÁRVORE DE HUFFMAN");
     printf("\n(1) Compactar");
     printf("\n(2) Descompactar");
