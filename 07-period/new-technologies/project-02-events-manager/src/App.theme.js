@@ -1,0 +1,16 @@
+export const AppTheme = {
+  black: "#0d0d0d",
+  backgroundPrimary: "#212121",
+  backgroundSecondary: "#171717",
+  title: "#ececec",
+  text: "#ececec",
+  textLight: "#bfc2c0",
+  placeholder: "#aaaaaa",
+  accent: "#df3079",
+  highlight: "#00a67d",
+  button: "#171717",
+  border: "#424242",
+  soldOut: "#ed4436",
+  available: "#0066ff",
+  availableTickets: "#ff5f00",
+};
