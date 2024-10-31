@@ -1,4 +1,4 @@
-import { APP_COLORS } from "@/assets/theme";
+import { APP_COLORS, APP_TYPOGRAPHY } from "@/assets/theme";
 import { StyleSheet } from "react-native";
 
 export default StyleSheet.create({
@@ -23,6 +23,7 @@ export default StyleSheet.create({
   },
   cardContainer: {
     position: "relative",
+    maxWidth: 480,
   },
   titleContainer: {
     marginTop: 28,
@@ -39,5 +40,11 @@ export default StyleSheet.create({
     position: "absolute",
     bottom: -140,
     width: 75,
+  },
+  errorMessage: {
+    ...APP_TYPOGRAPHY.mediumText,
+    color: APP_COLORS.red,
+    textAlign: "left",
+    marginTop: 8,
   },
 });

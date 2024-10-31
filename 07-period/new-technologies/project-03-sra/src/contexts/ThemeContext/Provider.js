@@ -2,25 +2,27 @@ import { APP_THEME } from "@/assets/theme";
 import { createContext, useMemo, useState } from "react";
 
 export const ThemeContext = createContext({
-  theme: APP_THEME,
   currentScheme: "light",
   setCurrentScheme: () => {},
+  statusBarStyle: "light",
+  setStatusBarStyle: () => {},
   colors: APP_THEME.light.colors,
 });
 
 export function ThemeProvider({ children }) {
-  const [theme, setTheme] = useState(APP_THEME);
   const [currentScheme, setCurrentScheme] = useState("light");
-  const colors = theme[currentScheme].colors;
+  const [statusBarStyle, setStatusBarStyle] = useState("light");
+  const colors = APP_THEME[currentScheme].colors;
 
   const value = useMemo(
     () => ({
-      theme,
       currentScheme,
       setCurrentScheme,
+      statusBarStyle,
+      setStatusBarStyle,
       colors,
     }),
-    [colors, theme, currentScheme]
+    [colors, statusBarStyle, currentScheme]
   );
 
   return (

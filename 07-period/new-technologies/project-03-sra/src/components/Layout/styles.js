@@ -10,4 +10,34 @@ export default StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 40,
   },
+  headerContainer: {
+    paddingVertical: 16,
+    marginBottom: 32,
+  },
+  headerContentContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  accessoryLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  accessoryRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  navigationButton: {
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 8,
+  },
+  navigationIcon: {
+    height: 32,
+  },
+  logo: {
+    width: 100,
+  },
 });

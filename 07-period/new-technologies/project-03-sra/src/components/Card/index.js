@@ -8,13 +8,14 @@ export function Card({
   title,
   subtitle,
   children,
+  titleStyle,
   backgroundColor = APP_COLORS.white,
 }) {
   return (
     <View style={[styles.container, { backgroundColor }, containerStyle]}>
       {(title || subtitle) && (
         <View style={[styles.titleContainer, titleContainerStyle]}>
-          {title && <Text style={styles.title}>{title}</Text>}
+          {title && <Text style={[styles.title, titleStyle]}>{title}</Text>}
           {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
         </View>
       )}

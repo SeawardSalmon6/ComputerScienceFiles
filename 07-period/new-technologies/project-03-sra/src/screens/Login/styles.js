@@ -14,4 +14,11 @@ export default StyleSheet.create({
     textAlign: "center",
     color: APP_COLORS.darkBlue,
   },
+  tip: {
+    ...APP_TYPOGRAPHY.mediumText,
+    paddingVertical: 4,
+    textAlign: "left",
+    color: APP_COLORS.darkBlue,
+    marginBottom: 48,
+  },
 });

@@ -4,10 +4,11 @@ export const APP_COLORS = {
   darkBlue: "#111740",
   blue: "#1D4666",
   blueLight: "#4C74AC",
-  whiteBackground: "#EEEEEE",
+  whiteBackground: "#FFFFFF",
   white: "#FFFFFF",
   gray: "#333333",
   lightGray: "#D9D9D9",
+  blueishGray: "#767CA0",
 };
 
 export const APP_TYPOGRAPHY = StyleSheet.create({

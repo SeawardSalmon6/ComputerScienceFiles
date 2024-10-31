@@ -6,16 +6,17 @@ import * as SplashScreen from "expo-splash-screen";
 import { useFonts } from "expo-font";
 import { useCallback } from "react";
 import { useThemeContext } from "@/contexts/ThemeContext/useThemeContext";
+import { AuthProvider } from "@/contexts/AuthContext/Provider";
 
 SplashScreen.preventAutoHideAsync();
 
 function App() {
-  const { currentScheme } = useThemeContext();
+  const { statusBarStyle } = useThemeContext();
 
   return (
     <>
       <RouterProvider />
-      <StatusBar style={currentScheme} />
+      <StatusBar style={statusBarStyle} />
     </>
   );
 }
@@ -46,7 +47,9 @@ export default function AppEntryComponent() {
   return (
     <SafeAreaProvider onLayout={onLayoutRootView}>
       <ThemeProvider>
-        <App />
+        <AuthProvider>
+          <App />
+        </AuthProvider>
       </ThemeProvider>
     </SafeAreaProvider>
   );

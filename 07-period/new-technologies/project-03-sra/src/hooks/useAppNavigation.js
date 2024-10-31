@@ -14,7 +14,7 @@ export function useAppNavigation() {
   };
 
   const getGoBack = () => {
-    return goBack();
+    return goBack(null);
   };
 
   const getGoTo = (path, ...params) => {

@@ -6,3 +6,12 @@
 # C Compiler Files
 main
 a.out
+
+# Expo files
+.expo
+.expo-shared
+
+# Node.js Files
+node_modules/
+npm-debug.log
+yarn-error.log
