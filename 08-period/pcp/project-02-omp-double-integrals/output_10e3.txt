@@ -1,0 +1,320 @@
+---- Test 1: Threads (1), Points (1, 1) results ----
+- Result: 1.39955928
+- Time elapsed: 1.13718803 seconds with
+  => Number of threads: 1
+  => X intervals: 10000
+  => Y intervals: 10000
+
+
+---- Test 1: Threads (2), Points (1, 1) results ----
+- Result: 1.39955928
+- Time elapsed: 0.75802025 seconds with
+  => Number of threads: 2
+  => X intervals: 10000
+  => Y intervals: 10000
+
+
+---- Test 1: Threads (3), Points (1, 1) results ----
+- Result: 1.39955928
+- Time elapsed: 0.50194909 seconds with
+  => Number of threads: 4
+  => X intervals: 10000
+  => Y intervals: 10000
+
+
+---- Test 1: Threads (4), Points (1, 1) results ----
+- Result: 1.39955928
+- Time elapsed: 0.39249980 seconds with
+  => Number of threads: 8
+  => X intervals: 10000
+  => Y intervals: 10000
+
+
+---- Test 2: Threads (1), Points (1, 1) results ----
+- Result: 1.39955928
+- Time elapsed: 1.21480680 seconds with
+  => Number of threads: 1
+  => X intervals: 10000
+  => Y intervals: 10000
+
+
+---- Test 2: Threads (2), Points (1, 1) results ----
+- Result: 1.39955928
+- Time elapsed: 0.75145965 seconds with
+  => Number of threads: 2
+  => X intervals: 10000
+  => Y intervals: 10000
+
+
+---- Test 2: Threads (3), Points (1, 1) results ----
+- Result: 1.39955928
+- Time elapsed: 0.56416028 seconds with
+  => Number of threads: 4
+  => X intervals: 10000
+  => Y intervals: 10000
+
+
+---- Test 2: Threads (4), Points (1, 1) results ----
+- Result: 1.39955928
+- Time elapsed: 0.42172139 seconds with
+  => Number of threads: 8
+  => X intervals: 10000
+  => Y intervals: 10000
+
+
+---- Test 3: Threads (1), Points (1, 1) results ----
+- Result: 1.39955928
+- Time elapsed: 1.16121084 seconds with
+  => Number of threads: 1
+  => X intervals: 10000
+  => Y intervals: 10000
+
+
+---- Test 3: Threads (2), Points (1, 1) results ----
+- Result: 1.39955928
+- Time elapsed: 0.69455804 seconds with
+  => Number of threads: 2
+  => X intervals: 10000
+  => Y intervals: 10000
+
+
+---- Test 3: Threads (3), Points (1, 1) results ----
+- Result: 1.39955928
+- Time elapsed: 0.57403305 seconds with
+  => Number of threads: 4
+  => X intervals: 10000
+  => Y intervals: 10000
+
+
+---- Test 3: Threads (4), Points (1, 1) results ----
+- Result: 1.39955928
+- Time elapsed: 0.44932033 seconds with
+  => Number of threads: 8
+  => X intervals: 10000
+  => Y intervals: 10000
+
+
+---- Test 4: Threads (1), Points (1, 1) results ----
+- Result: 1.39955928
+- Time elapsed: 1.24181035 seconds with
+  => Number of threads: 1
+  => X intervals: 10000
+  => Y intervals: 10000
+
+
+---- Test 4: Threads (2), Points (1, 1) results ----
+- Result: 1.39955928
+- Time elapsed: 0.68325414 seconds with
+  => Number of threads: 2
+  => X intervals: 10000
+  => Y intervals: 10000
+
+
+---- Test 4: Threads (3), Points (1, 1) results ----
+- Result: 1.39955928
+- Time elapsed: 0.62421151 seconds with
+  => Number of threads: 4
+  => X intervals: 10000
+  => Y intervals: 10000
+
+
+---- Test 4: Threads (4), Points (1, 1) results ----
+- Result: 1.39955928
+- Time elapsed: 0.39598401 seconds with
+  => Number of threads: 8
+  => X intervals: 10000
+  => Y intervals: 10000
+
+
+---- Test 5: Threads (1), Points (1, 1) results ----
+- Result: 1.39955928
+- Time elapsed: 1.26930427 seconds with
+  => Number of threads: 1
+  => X intervals: 10000
+  => Y intervals: 10000
+
+
+---- Test 5: Threads (2), Points (1, 1) results ----
+- Result: 1.39955928
+- Time elapsed: 0.81578608 seconds with
+  => Number of threads: 2
+  => X intervals: 10000
+  => Y intervals: 10000
+
+
+---- Test 5: Threads (3), Points (1, 1) results ----
+- Result: 1.39955928
+- Time elapsed: 0.54303985 seconds with
+  => Number of threads: 4
+  => X intervals: 10000
+  => Y intervals: 10000
+
+
+---- Test 5: Threads (4), Points (1, 1) results ----
+- Result: 1.39955928
+- Time elapsed: 0.38288885 seconds with
+  => Number of threads: 8
+  => X intervals: 10000
+  => Y intervals: 10000
+
+
+---- Test 6: Threads (1), Points (1, 1) results ----
+- Result: 1.39955928
+- Time elapsed: 1.16503833 seconds with
+  => Number of threads: 1
+  => X intervals: 10000
+  => Y intervals: 10000
+
+
+---- Test 6: Threads (2), Points (1, 1) results ----
+- Result: 1.39955928
+- Time elapsed: 0.74374128 seconds with
+  => Number of threads: 2
+  => X intervals: 10000
+  => Y intervals: 10000
+
+
+---- Test 6: Threads (3), Points (1, 1) results ----
+- Result: 1.39955928
+- Time elapsed: 0.56033746 seconds with
+  => Number of threads: 4
+  => X intervals: 10000
+  => Y intervals: 10000
+
+
+---- Test 6: Threads (4), Points (1, 1) results ----
+- Result: 1.39955928
+- Time elapsed: 0.43422691 seconds with
+  => Number of threads: 8
+  => X intervals: 10000
+  => Y intervals: 10000
+
+
+---- Test 7: Threads (1), Points (1, 1) results ----
+- Result: 1.39955928
+- Time elapsed: 1.45094169 seconds with
+  => Number of threads: 1
+  => X intervals: 10000
+  => Y intervals: 10000
+
+
+---- Test 7: Threads (2), Points (1, 1) results ----
+- Result: 1.39955928
+- Time elapsed: 0.82554712 seconds with
+  => Number of threads: 2
+  => X intervals: 10000
+  => Y intervals: 10000
+
+
+---- Test 7: Threads (3), Points (1, 1) results ----
+- Result: 1.39955928
+- Time elapsed: 0.66882699 seconds with
+  => Number of threads: 4
+  => X intervals: 10000
+  => Y intervals: 10000
+
+
+---- Test 7: Threads (4), Points (1, 1) results ----
+- Result: 1.39955928
+- Time elapsed: 0.45039663 seconds with
+  => Number of threads: 8
+  => X intervals: 10000
+  => Y intervals: 10000
+
+
+---- Test 8: Threads (1), Points (1, 1) results ----
+- Result: 1.39955928
+- Time elapsed: 1.20043108 seconds with
+  => Number of threads: 1
+  => X intervals: 10000
+  => Y intervals: 10000
+
+
+---- Test 8: Threads (2), Points (1, 1) results ----
+- Result: 1.39955928
+- Time elapsed: 0.77227326 seconds with
+  => Number of threads: 2
+  => X intervals: 10000
+  => Y intervals: 10000
+
+
+---- Test 8: Threads (3), Points (1, 1) results ----
+- Result: 1.39955928
+- Time elapsed: 0.59006733 seconds with
+  => Number of threads: 4
+  => X intervals: 10000
+  => Y intervals: 10000
+
+
+---- Test 8: Threads (4), Points (1, 1) results ----
+- Result: 1.39955928
+- Time elapsed: 0.39031203 seconds with
+  => Number of threads: 8
+  => X intervals: 10000
+  => Y intervals: 10000
+
+
+---- Test 9: Threads (1), Points (1, 1) results ----
+- Result: 1.39955928
+- Time elapsed: 1.27842350 seconds with
+  => Number of threads: 1
+  => X intervals: 10000
+  => Y intervals: 10000
+
+
+---- Test 9: Threads (2), Points (1, 1) results ----
+- Result: 1.39955928
+- Time elapsed: 0.96604672 seconds with
+  => Number of threads: 2
+  => X intervals: 10000
+  => Y intervals: 10000
+
+
+---- Test 9: Threads (3), Points (1, 1) results ----
+- Result: 1.39955928
+- Time elapsed: 0.68598653 seconds with
+  => Number of threads: 4
+  => X intervals: 10000
+  => Y intervals: 10000
+
+
+---- Test 9: Threads (4), Points (1, 1) results ----
+- Result: 1.39955928
+- Time elapsed: 0.39917623 seconds with
+  => Number of threads: 8
+  => X intervals: 10000
+  => Y intervals: 10000
+
+
+---- Test 10: Threads (1), Points (1, 1) results ----
+- Result: 1.39955928
+- Time elapsed: 1.21550210 seconds with
+  => Number of threads: 1
+  => X intervals: 10000
+  => Y intervals: 10000
+
+
+---- Test 10: Threads (2), Points (1, 1) results ----
+- Result: 1.39955928
+- Time elapsed: 0.76401898 seconds with
+  => Number of threads: 2
+  => X intervals: 10000
+  => Y intervals: 10000
+
+
+---- Test 10: Threads (3), Points (1, 1) results ----
+- Result: 1.39955928
+- Time elapsed: 0.70095482 seconds with
+  => Number of threads: 4
+  => X intervals: 10000
+  => Y intervals: 10000
+
+
+---- Test 10: Threads (4), Points (1, 1) results ----
+- Result: 1.39955928
+- Time elapsed: 0.38446983 seconds with
+  => Number of threads: 8
+  => X intervals: 10000
+  => Y intervals: 10000
+
+
