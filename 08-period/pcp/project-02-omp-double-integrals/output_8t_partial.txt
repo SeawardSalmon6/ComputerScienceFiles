@@ -1,0 +1,40 @@
+---- Test 1 results ----
+    ---- 8 Threads results ----
+        ---- Intervals (10000, 10000) results ----
+            - Result: 1.3995592779875192
+            - Time elapsed: 0.3399696409996977 seconds
+
+
+        ---- Intervals (10000, 100000) results ----
+            - Result: 1.3995592845050173
+            - Time elapsed: 3.1609404809987609 seconds
+
+
+        ---- Intervals (10000, 1000000) results ----
+            - Result: 1.3995592845701932
+            - Time elapsed: 35.4430412059991795 seconds
+
+
+        ---- Intervals (100000, 10000) results ----
+            - Result: 1.3995592845050171
+            - Time elapsed: 3.8014708610007801 seconds
+
+
+        ---- Intervals (100000, 100000) results ----
+            - Result: 1.3995592910225181
+            - Time elapsed: 38.8313510230000247 seconds
+
+
+        ---- Intervals (100000, 1000000) results ----
+            - Result: 1.3995592910876931
+            - Time elapsed: 390.1882818140002200 seconds
+
+
+        ---- Intervals (1000000, 10000) results ----
+            - Result: 1.3995592845702001
+            - Time elapsed: 41.1159840860000259 seconds
+
+
+        ---- Intervals (1000000, 100000) results ----
+            - Result: 1.3995592910877028
+            - Time elapsed: 437.3705685949989856 seconds
