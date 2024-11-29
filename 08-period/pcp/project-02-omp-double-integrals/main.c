@@ -74,16 +74,10 @@ int main() {
   FILE *logger_fp = fopen(LOGGER_FILENAME, "a+");
 
   for (t = 0; t < NUM_OF_TESTS_RUNS; t++) {
-
-    // Test ID
-    fprintf(logger_fp, "\"%d\";", t);
-
     for (k = 0; k < THREADS_LENGTH; k++) {
       num_of_threads = THREADS_TESTS[k];
       omp_set_num_threads(num_of_threads);
 
-      // Processes length
-      fprintf(logger_fp, "\"%d\";", num_of_threads);
 
       for (i = 0; i < INTERVALS_LENGTH; i++) {
         for (j = 0; j < INTERVALS_LENGTH; j++) {
@@ -92,23 +86,18 @@ int main() {
           points[0] = INTERVALS_TESTS[i] + 1;
           points[1] = INTERVALS_TESTS[j] + 1;
 
-          // X points
-          fprintf(logger_fp, "\"%ld\";", INTERVALS_TESTS[i]);
-
-          // Y points
-          fprintf(logger_fp, "\"%ld\";", INTERVALS_TESTS[j]);
-
           start = omp_get_wtime();
           result = double_trapz(points);
           end = omp_get_wtime();
 
           exec_time = end - start;
 
-          // Result
-          fprintf(logger_fp, "\"%.16lf\";", result);
-
-          // Time elapsed
-          fprintf(logger_fp, "\"%.16lf\"\n", exec_time);
+          fprintf(logger_fp, "\"%d\";", t);                   // Test ID
+          fprintf(logger_fp, "\"%d\";", num_of_threads);      // Processes length
+          fprintf(logger_fp, "\"%ld\";", INTERVALS_TESTS[i]); // X points
+          fprintf(logger_fp, "\"%ld\";", INTERVALS_TESTS[j]); // Y points
+          fprintf(logger_fp, "\"%.16lf\";", result);          // Result
+          fprintf(logger_fp, "\"%.16lf\"\n", exec_time);      // Time elapsed
         }
       }
     }
