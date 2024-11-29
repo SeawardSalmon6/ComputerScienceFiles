@@ -3,18 +3,20 @@
 #include <math.h>
 #include <omp.h>
 
+#define LOGGER_FILENAME "log.csv"
+
 #define LOWER_BOUND 0
 #define UPPER_BOUND 1.5
 
-#define NUM_OF_TESTS_RUNS 2
+#define NUM_OF_TESTS_RUNS 5
 #define INTERVALS_LENGTH 3
 #define THREADS_LENGTH 4
 
 const int THREADS_TESTS[] = { 8, 4, 2, 1 };
 const long INTERVALS_TESTS[] = {
-  (long)1e4, // 10^3
-  (long)1e5, // 10^4
-  (long)1e6  // 10^5
+  (long)1e3, // 10^3
+  (long)1e4, // 10^4
+  (long)1e5  // 10^5
 };
 
 double f(const double x, const double y) {
@@ -67,50 +69,52 @@ double double_trapz(const long points[2]) {
 int main() {
   int i, j, k, t, num_of_threads = 0;
   long points[2] = { 0, 0 };
-  double start, end, suit_time = 0.0, total_time = 0.0;
+  double result, start, end, exec_time = 0.0;
+
+  FILE *logger_fp = fopen(LOGGER_FILENAME, "a+");
 
   for (t = 0; t < NUM_OF_TESTS_RUNS; t++) {
-    printf("---- Test %d results ----\n", (t + 1));
-    suit_time = 0.0;
+
+    // Test ID
+    fprintf(logger_fp, "\"%d\";", t);
 
     for (k = 0; k < THREADS_LENGTH; k++) {
       num_of_threads = THREADS_TESTS[k];
       omp_set_num_threads(num_of_threads);
 
-      printf("    ---- %d Threads results ----\n", num_of_threads);
+      // Processes length
+      fprintf(logger_fp, "\"%d\";", num_of_threads);
 
-      /*
-        For reproductibility of the tests in the report,
-          uncomment the line below:
-          
-        for (i = 0; i < 1; i++) { // Refers only to first interval of the outer integral
-       */
       for (i = 0; i < INTERVALS_LENGTH; i++) {
         for (j = 0; j < INTERVALS_LENGTH; j++) {
+          printf("---- Test %d, %d, %d, %d ----\n", (t + 1), num_of_threads, (i + 1), (j + 1));
+
           points[0] = INTERVALS_TESTS[i] + 1;
           points[1] = INTERVALS_TESTS[j] + 1;
 
+          // X points
+          fprintf(logger_fp, "\"%ld\";", INTERVALS_TESTS[i]);
+
+          // Y points
+          fprintf(logger_fp, "\"%ld\";", INTERVALS_TESTS[j]);
+
           start = omp_get_wtime();
-          double result = double_trapz(points);
+          result = double_trapz(points);
           end = omp_get_wtime();
 
-          double time = end - start;
-          suit_time += time;
-          total_time += time;
+          exec_time = end - start;
 
-          printf("        ---- Intervals (%ld, %ld) results ----\n", points[0] - 1, points[1] - 1);
-          printf("            - Result: %.16lf\n", result);
-          printf("            - Time elapsed: %.16lf seconds\n", time);
-          printf("\n\n");
+          // Result
+          fprintf(logger_fp, "\"%.16lf\";", result);
+
+          // Time elapsed
+          fprintf(logger_fp, "\"%.16lf\"\n", exec_time);
         }
       }
     }
-
-    printf("==== Test %d total time elapsed: %.16lf seconds\n\n", (t + 1), suit_time);
   }
 
-  printf("\n---- Total suits time elapsed: %.16lf seconds", total_time);
-  printf("\n    - Average time elapsed: %.16lf seconds\n", total_time / NUM_OF_TESTS_RUNS);
+  fclose(logger_fp);
 
   return 0;
 }

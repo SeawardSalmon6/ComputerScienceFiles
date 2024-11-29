@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <mpi.h>
+#include <cuda_runtime.h>
 
 #define LOGGER_FILENAME "log.csv"
 
@@ -9,10 +9,15 @@
 #define UPPER_BOUND 1.5
 
 #define ROOT_PROCESS 0
+#define THREADS_PER_BLOCK 512
 
-// #define TEST_NUM 1
-// const long X_POINTS = (long)1e3; // 10^3
-// const long Y_POINTS = (long)1e3; // 10^3
+#define BLOCKS 10
+// #define BLOCKS 100
+// #define BLOCKS 1000
+
+#define TEST_NUM 1
+const long X_POINTS = (long)1e3; // 10^3
+const long Y_POINTS = (long)1e3; // 10^3
 
 // #define TEST_NUM 2
 // const long X_POINTS = (long)1e3; // 10^3
@@ -46,16 +51,16 @@
 // const long X_POINTS = (long)1e5; // 10^5
 // const long Y_POINTS = (long)1e4; // 10^4
 
-#define TEST_NUM 9
-const long X_POINTS = (long)1e5; // 10^5
-const long Y_POINTS = (long)1e5; // 10^5
+// #define TEST_NUM 9
+// const long X_POINTS = (long)1e5; // 10^5
+// const long Y_POINTS = (long)1e5; // 10^5
 
-double f(const double x, const double y) {
+__device__ double f(const double x, const double y) {
   // f(x, y) = sin(x² + y²)
   return sin(x * x + y * y);
 }
 
-double double_trapz(const int my_rank, const int world_size) {
+__global__ void double_trapz(double *global_result) {
   const long X_INTERVALS = X_POINTS - 1;
   const long Y_INTERVALS = Y_POINTS - 1;
 
@@ -64,8 +69,10 @@ double double_trapz(const int my_rank, const int world_size) {
   const double HY = (UPPER_BOUND - LOWER_BOUND) / Y_INTERVALS;
   const double HY_HALF = HY / 2.0;
 
-  long outer_start = X_POINTS * my_rank / world_size;
-  long outer_end = X_POINTS * (my_rank + 1) / world_size;
+  const long idx = blockIdx.x * blockDim.x + threadIdx.x;
+  long intervals_per_thread = (X_INTERVALS * Y_INTERVALS) / (BLOCKS * THREADS_PER_BLOCK);
+  long outer_start = idx * intervals_per_thread;
+  long outer_end = (idx + 1) * intervals_per_thread;
 
   double x, inner_result, fxy;
   double local_result = 0.0;
@@ -83,43 +90,33 @@ double double_trapz(const int my_rank, const int world_size) {
     local_result += (i == 0 || i == X_INTERVALS) ? inner_result : 2 * inner_result;
   }
 
-  local_result *= HX_HALF;
-
-  double global_result = 0.0;
-  MPI_Reduce(&local_result, &global_result, 1, MPI_DOUBLE, MPI_SUM, ROOT_PROCESS, MPI_COMM_WORLD);
-  return global_result;
+  *global_result += local_result * HX_HALF;
 }
 
 int main(int argc, char *argv[]) {
-  int my_rank, world_size;
-  double end, start;
+  double result, time;
+  cudaEvent_t start, stop;
 
-  MPI_Init(&argc, &argv);
-  MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-  MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+  cudaEventCreate(&start);
+  cudaEventCreate(&stop);
+  cudaEventRecord(start, 0);
 
-  MPI_Barrier(MPI_COMM_WORLD);
-  start = MPI_Wtime();
+  double_trapz<<<BLOCKS, THREADS_PER_BLOCK>>>(&result);
+  
+  cudaEventRecord(stop, 0);
+  cudaEventSynchronize(stop);
+  cudaEventElapsedTime(&time, start, stop);
 
-  double result = double_trapz(my_rank, world_size);
+  FILE *logger_fp = fopen(LOGGER_FILENAME, "a+");
 
-  MPI_Barrier(MPI_COMM_WORLD);
-  end = MPI_Wtime();
+  fprintf(logger_fp, "\"%d\";", TEST_NUM);    // Test ID
+  fprintf(logger_fp, "\"%d\";", BLOCKS);      // Blocks length
+  fprintf(logger_fp, "\"%ld\";", X_POINTS);   // X points
+  fprintf(logger_fp, "\"%ld\";", Y_POINTS);   // Y points
+  fprintf(logger_fp, "\"%.16lf\";", result);  // Result
+  fprintf(logger_fp, "\"%.16lf\";\n", time);  // Time elapsed
 
-  MPI_Finalize();
-
-  if (my_rank == ROOT_PROCESS) {
-    FILE *logger_fp = fopen(LOGGER_FILENAME, "a+");
-
-    fprintf(logger_fp, "\"%d\";", TEST_NUM);          // Test ID
-    fprintf(logger_fp, "\"%d\";", world_size);        // Processes length
-    fprintf(logger_fp, "\"%ld\";", X_POINTS);         // X points
-    fprintf(logger_fp, "\"%ld\";", Y_POINTS);         // Y points
-    fprintf(logger_fp, "\"%.16lf\";", result);        // Result
-    fprintf(logger_fp, "\"%.16lf\";\n", end - start); // Time elapsed
-
-    fclose(logger_fp);
-  }
+  fclose(logger_fp);
 
   return 0;
 }
