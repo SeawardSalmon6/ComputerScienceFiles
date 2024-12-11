@@ -23,9 +23,9 @@
   If 1, will hide these extra validations
     and workers will use random production values.
 */
-#define DEBUG 0
+#define DEBUG 1
 
-#define MAX_SIMULTANEOUS_CONNECTIONS 5
+#define MAX_SIMULTANEOUS_CONNECTIONS 10
 #define MAX_BUFFER_SIZE 256
 #define COMMON_HOSTNAME "127.0.0.1"
 #define MANAGER_ID 0
@@ -72,7 +72,7 @@ void report_info(const char *msg, const int worker_id);
 void report_connection(const int worker_id, const int pair_id, const int pair_port);
 void report_connection_closed(const int worker_id, const int pair_id, const int pair_port);
 void report_connection_accepted(const int worker_id, const int pair_port);
-void report_readiness(const int worker_id, const int port);
+void report_readiness(const int socket_fd, const int worker_id, const int port);
 void report_production(const int worker_id, const int produced, const int port);
 void report_consumption(const int consumer_id, const int consumed, const int producer_id, const int producer_port);
 

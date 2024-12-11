@@ -5,7 +5,6 @@
 #include <unistd.h>
 #include <time.h>
 #include <sys/time.h>
-#include <mpi.h>
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -69,8 +68,23 @@ void report_connection_accepted(const int worker_id, const int pair_port) {
   timestamp = NULL;
 }
 
-void report_readiness(const int worker_id, const int port) {
-  MPI_Barrier(MPI_COMM_WORLD);
+void barrier(const int socket_fd) {
+  int ready = 1;
+  connect_to_port(socket_fd, MANAGER_PORT);
+
+  int write_status = write(socket_fd, &ready, sizeof(ready));
+  if (write_status < 0) {
+    close_socket(socket_fd);
+    throw_error("Error when writing to socket");
+  }
+
+  wait_for_exit_signal(socket_fd);
+}
+
+void report_readiness(const int socket_fd, const int worker_id, const int port) {
+  if (socket_fd != MANAGER_ID) {
+    barrier(socket_fd);
+  }
 
   char *timestamp = get_timestamp();
   printf("[%s](%d) INFO: Worker %d is ready at port %d\n", timestamp, worker_id, worker_id, port);
@@ -176,15 +190,22 @@ char *retrieve_worker_address_from_port(const int port) {
 int connect_to_port(const int socket_fd, const int connection_port) {
   sockaddr_in_t *target_address = get_address_for_port(connection_port);
 
-  int connect_status = connect(socket_fd, (struct sockaddr *)target_address, sizeof(*target_address));
-  if (connect_status < 0) {
-    close_socket(socket_fd);
+  if (DEBUG) {
+    printf("Trying to connect to port %d\n", connection_port);
+  }
 
-    if (DEBUG) {
-      printf("Trying to connect to port %d", connection_port);
+  int connect_status = -1;
+  do {
+    connect_status = connect(socket_fd, (struct sockaddr *)target_address, sizeof(*target_address));
+
+    if (connect_status < 0) {
+      // close_socket(socket_fd);
+      // throw_error("Error when connecting to server");
     }
+  } while (connect_status < 0);
 
-    throw_error("Error when connecting to server");
+  if (DEBUG) {
+    printf("Disconnecting from port %d...\n", connection_port);
   }
 
   free(target_address);
@@ -306,20 +327,25 @@ void send_value_to_port_and_exit(int produced, const int socket_fd, const int se
 }
 
 void build_only_producer_worker(const int worker_id, const int worker_port, const int destination_id, const int destination_port) {
-  int socket_fd = get_socket(FALSE);
+  int listening_socket_fd = get_socket(TRUE);
   sockaddr_in_t *socket_address = get_address_for_port(worker_port);
-  bind_socket(socket_fd, socket_address);
+  bind_socket(listening_socket_fd, socket_address);
+  listen_socket(listening_socket_fd);
 
-  report_readiness(worker_id, worker_port);
+  report_readiness(listening_socket_fd, worker_id, worker_port);
+  close_socket(listening_socket_fd);
 
   srand(time(NULL) + worker_id);
 
   int produced = DEBUG ? worker_id : rand() % 1000;
   report_production(worker_id, produced, worker_port);
 
+  int sending_socket_fd = get_socket(TRUE);
+  bind_socket(sending_socket_fd, socket_address);
+
   send_value_to_port_and_exit(
     produced,
-    socket_fd,
+    sending_socket_fd,
     worker_id,
     destination_id,
     destination_port
@@ -332,7 +358,7 @@ void build_receiver_sender_worker(const int worker_id, const int worker_port, co
   bind_socket(listening_socket_fd, socket_address);
   listen_socket(listening_socket_fd);
 
-  report_readiness(worker_id, worker_port);
+  report_readiness(listening_socket_fd, worker_id, worker_port);
 
   srand(time(NULL) + worker_id);
   int consumed;
@@ -401,18 +427,50 @@ void build_receiver_sender_worker(const int worker_id, const int worker_port, co
 }
 
 void build_manager_socket(const int worker_id, const int worker_port) {
-  int socket_fd = get_socket(FALSE);
+  int socket_fd = get_socket(TRUE);
   sockaddr_in_t *socket_address = get_address_for_port(worker_port);
   bind_socket(socket_fd, socket_address);
   listen_socket(socket_fd);
 
-  report_readiness(worker_id, worker_port);
+  report_readiness(0, worker_id, worker_port);
 
-  int accepted_socket_fd, read_status, client_id, client_port, consumed;
+  int consumed, accepted_socket_fd, read_status, client_id, client_port, should_send_to_manager = FALSE;
   sockaddr_in_t client_address;
 
-  accepted_socket_fd = accept_socket(socket_fd, &client_address);
+  int connections[WORKERS_INDEXES_LENGTH - 1], total = 0;
+  while (total < WORKERS_INDEXES_LENGTH - 1) {
+    clear_buffer(&client_address, sizeof(client_address));
+    accepted_socket_fd = accept_socket(socket_fd, &client_address);
 
+    client_port = ntohs(client_address.sin_port);
+    client_id = get_worker_id_by_port(client_port);
+
+    if (client_id < 0) {
+      close_socket(socket_fd);
+      close_socket(accepted_socket_fd);
+      throw_error("Error on getting client_id");
+    }
+
+    report_connection_accepted(worker_id, client_port);
+
+    read_status = read(accepted_socket_fd, &consumed, sizeof(consumed));
+    if (read_status < 0) {
+      close_socket(socket_fd);
+      close_socket(accepted_socket_fd);
+      throw_error("Error when reading from socket");
+    }
+
+    report_consumption(worker_id, consumed, client_id, client_port);
+    connections[total++] = accepted_socket_fd;
+  }
+
+  for (int i = 0; i < WORKERS_INDEXES_LENGTH - 1; i++) {
+    send_exit_signal(connections[i]);
+    close_socket(connections[i]);
+    report_connection_closed(MANAGER_ID, -1, -1);
+  }
+
+  accepted_socket_fd = accept_socket(socket_fd, &client_address);
   client_port = ntohs(client_address.sin_port);
   client_id = get_worker_id_by_port(client_port);
 

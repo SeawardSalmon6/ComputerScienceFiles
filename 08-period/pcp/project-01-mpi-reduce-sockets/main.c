@@ -1,14 +1,9 @@
 #include <stdio.h>
-#include <mpi.h>
-
+#include <stdlib.h>
 #include "factory.h"
 
 int main(int argc, char **argv) {
-  int PROCESS_RANK, PROCESSES_LENGTH;
-
-  MPI_Init(&argc, &argv);
-  MPI_Comm_size(MPI_COMM_WORLD, &PROCESSES_LENGTH);
-  MPI_Comm_rank(MPI_COMM_WORLD, &PROCESS_RANK);
+  int PROCESS_RANK = atol(argv[1]), PROCESSES_LENGTH = WORKERS_INDEXES_LENGTH;
 
   if (PROCESS_RANK == MANAGER_ID) { // Manager has its own function
     build_manager_socket(
@@ -31,6 +26,5 @@ int main(int argc, char **argv) {
     );
   }
 
-  MPI_Finalize();
   return 0;
 }
