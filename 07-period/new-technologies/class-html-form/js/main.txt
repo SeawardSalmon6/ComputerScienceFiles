@@ -1,0 +1,47 @@
+(async function () {
+  await new Promise((resolve) => {
+    const interval = setInterval(() => {
+      if (window._components_loaded) {
+        clearInterval(interval);
+        resolve();
+      }
+    }, 10);
+  });
+
+  const LOGGED_USER_KEY = "user";
+  const user = JSON.parse(
+    atob(window.localStorage.getItem(LOGGED_USER_KEY) || btoa("null"))
+  );
+
+  if (user && typeof user === "object" && user.email) {
+    const [login, register] = [
+      document.getElementById("login"),
+      document.getElementById("register"),
+    ];
+
+    const userNameElement = document.getElementById("user_name");
+    userNameElement.innerHTML = `Welcome back, ${user.name}! <button id="logout" type="button">Log out</button>`;
+
+    if (login) {
+      login.style.setProperty("display", "none");
+    }
+
+    if (register) {
+      register.style.setProperty("display", "none");
+    }
+
+    const button = document.getElementById("logout");
+    button.addEventListener("click", () => {
+      userNameElement.innerHTML = "";
+      window.localStorage.removeItem(LOGGED_USER_KEY);
+
+      if (login) {
+        login.style.setProperty("display", null);
+      }
+
+      if (register) {
+        register.style.setProperty("display", null);
+      }
+    });
+  }
+})();

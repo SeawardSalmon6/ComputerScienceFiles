@@ -1,0 +1,54 @@
+<html>
+    <head></head>
+    <body>
+        <style>
+            .navbar {
+                display: flex;
+                gap: 12px;
+                justify-content: space-between;
+                align-items: flex-start;
+            }
+
+            .navbar nav {
+                display: flex;
+                align-items: flex-end;
+                justify-content: flex-start;
+                flex-direction: column;
+            }
+
+            .navbar nav > p {
+                margin: 0;
+            }
+
+            .navbar__list {
+                display: flex;
+                gap: 12px;
+                list-style: none;
+            }
+        </style>
+
+        <header class="navbar">
+            <img src="/images/ifood.png" height="40px" alt="Our logo" />
+            <nav>
+                <ul class="navbar__list">
+                    <li>
+                        <a href="/index.html">Home</a>
+                    </li>
+                    <li>
+                        <a href="/contact-us.html">Contact us</a>
+                    </li>
+                    <li id="login">
+                        <a href="/login.html">Log in</a>
+                    </li>
+                    <li id="register">
+                        <a href="/register.html">Register</a>
+                    </li>
+                    <li>
+                        <a href="/about.html">About us</a>
+                    </li>
+                </ul>
+                <p id="user_name"></p>
+            </nav>
+        </header>
+    </body>
+</html>

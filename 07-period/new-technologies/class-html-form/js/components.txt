@@ -1,0 +1,45 @@
+window._components_loaded = false;
+
+(function () {
+    const COMPONENTS_MAP = {
+        'navbar': 'components/navbar.html',
+    };
+
+    async function fetchComponent(path) {
+        const response = await fetch(path);
+        if (response.ok) {
+            return await response.text();
+        }
+
+        return null;
+    }
+
+    const componentsToRender = Array.from(document.querySelectorAll('component[type]'));
+    const componentsPromises = [];
+
+    for (const c of componentsToRender) {
+        const component = c.getAttribute('type');
+        const path = COMPONENTS_MAP[component];
+
+        if (!path) {
+            continue;
+        }
+
+        componentsPromises.push(
+            fetchComponent(path)
+                .then((content) => {
+                    const matches = content.match(/<body[^>]*>([\s\S]*)<\/body>/i) ?? [];
+                    const htmlContent = matches.length === 2 ? matches[1] : '';
+
+                    const node = document.createElement('div');
+                    node.innerHTML = htmlContent;
+                    c.replaceWith(node);
+                }
+            )
+        );
+    }
+
+    Promise.all(componentsPromises).then(() => {
+        window._components_loaded = true;
+    })
+})();
